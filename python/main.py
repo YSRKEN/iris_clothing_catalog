@@ -1,16 +1,14 @@
-# This is a sample Python script.
+from service.RHScrapingService import RHScrapingService
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    scraping = RHScrapingService()
+    dom = scraping.get_page('https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E6%80%A7%E8%83%BD%E4%B8'
+                            '%80%E8%A6%A7', 'utf-8')
+    for table_tag in dom.find_all('table'):
+        thead_tag = table_tag.find('thead')
+        if thead_tag is None:
+            continue
+        thead_text = thead_tag.full_text
+        if 'HP' not in thead_text:
+            continue
+        print(thead_text)

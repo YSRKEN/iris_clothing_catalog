@@ -1,1 +1,3 @@
 python/venv/
+python/model/__pycache__/
+python/service/__pycache__/
