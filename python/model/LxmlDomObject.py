@@ -22,7 +22,7 @@ class LxmlDomObject(DomObject):
 
     @property
     def text(self) -> str:
-        return self.dom.text()
+        return self.dom.text
 
     @property
     def full_text(self) -> str:
