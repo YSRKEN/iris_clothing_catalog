@@ -33,6 +33,18 @@ if __name__ == '__main__':
         death_index = th_text_list.index('即死率')
 
         # 基礎データを取得する
+        table_text = table_tag.full_text
+        if '高潔なる煌めきの銀閃' in table_text:
+            reality = 'SSR'
+        elif '白銀の疾風' in table_text:
+            reality = 'SR'
+        elif '忠信の私服' in table_text:
+            reality = 'R'
+        elif '騎士の私服' in table_text:
+            reality = 'N'
+        else:
+            reality = ''
+
         for tr_tag in table_tag.find_all('tbody > tr'):
             td_text_list = [x.full_text for x in tr_tag.find_all('td')]
             cloth_name = td_text_list[name_index]
@@ -50,6 +62,7 @@ if __name__ == '__main__':
             nickname = temp[0].replace('【', '')
             iris_name = temp[1]
             cloth_data = IrisClothing(
+                reality=reality,
                 nickname=nickname,
                 iris_name=iris_name,
                 type=cloth_type,

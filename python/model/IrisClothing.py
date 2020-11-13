@@ -5,6 +5,7 @@ from dataclasses_json import dataclass_json
 @dataclass_json
 @dataclass
 class IrisClothing:
+    reality: str
     nickname: str
     iris_name: str
     type: str
