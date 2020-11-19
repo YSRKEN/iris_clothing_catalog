@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Col, Container, Row, Table } from 'react-bootstrap';
+import { Button, Col, Container, Form, Row, Table } from 'react-bootstrap';
 
 const APPLICATION_TITLE = 'めーおーの聖装カタログ';
 
@@ -111,8 +111,19 @@ const App: React.FC = () => {
         </Col>
       </Row>
       <Row className="my-3">
-        <Col className="text-center">
-          <Table size="sm" striped>
+        <Col>
+          <h2>検索条件</h2>
+          <Form className="mt-3">
+            <Form.Group>
+              <Button>＋</Button>
+            </Form.Group>
+          </Form>
+        </Col>
+      </Row>
+      <Row className="my-3">
+        <Col>
+          <h2>検索結果</h2>
+          <Table className="text-center" size="sm" striped>
             <thead>
               <tr>
                 <th onClick={() => changeSortKey('index')}>#{sortKey === 'index' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
