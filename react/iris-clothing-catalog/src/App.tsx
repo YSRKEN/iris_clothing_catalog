@@ -3,6 +3,10 @@ import { Col, Container, Row, Table } from 'react-bootstrap';
 
 const APPLICATION_TITLE = 'めーおーの聖装カタログ';
 
+type SortKey = '' | 'index' | 'reality' | 'iris_name' | 'type' | 'hp' | 'attack' | 'defence' | 'magic' | 'speed' | 'lucky' | 'evade' | 'counter' | 'death';
+
+type SortOrder = 'ascending' | 'descending';
+
 interface IrisClothing {
   index: number;
   reality: string;
@@ -28,6 +32,9 @@ const Title: React.FC = () => (<>
 
 const App: React.FC = () => {
   const [clothingList, setClothingList] = useState<IrisClothing[]>([]);
+  const [clothingList2, setClothingList2] = useState<IrisClothing[]>([]);
+  const [sortKey, setSortKey] = useState<SortKey>('');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('ascending');
 
   useEffect(() => {
     fetch('./list.json').then(res => {
@@ -41,7 +48,52 @@ const App: React.FC = () => {
     });
   }, []);
 
-  useEffect(() => console.log(clothingList), [clothingList]);
+  useEffect(() => {
+    console.log(sortKey);
+    console.log(sortOrder);
+    if (sortKey === '') {
+      setClothingList2(clothingList);
+    } else {
+      if (sortOrder === 'ascending') {
+        setClothingList2(Array.from(clothingList).sort((a: IrisClothing, b: IrisClothing) => {
+          const aVal = (a as { [key: string]: any })[sortKey as string];
+          const bVal = (b as { [key: string]: any })[sortKey as string];
+          if (aVal < bVal) {
+            return -1;
+          } else if (aVal > bVal) {
+            return 1;
+          } else {
+            return 0;
+          }
+        }));
+      } else {
+        setClothingList2(Array.from(clothingList).sort((a: IrisClothing, b: IrisClothing) => {
+          const aVal = (a as { [key: string]: any })[sortKey as string];
+          const bVal = (b as { [key: string]: any })[sortKey as string];
+          if (aVal < bVal) {
+            return 1;
+          } else if (aVal > bVal) {
+            return -1;
+          } else {
+            return 0;
+          }
+        }));
+      }
+    }
+  }, [clothingList, sortKey, sortOrder]);
+
+  const changeSortKey = (key: SortKey) => {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortOrder('ascending');
+    } else {
+      if (sortOrder === 'ascending') {
+        setSortOrder('descending');
+      } else if (sortOrder === 'descending') {
+        setSortKey('');
+      }
+    }
+  };
 
   return (
     <Container>
@@ -55,24 +107,24 @@ const App: React.FC = () => {
           <Table size="sm" striped>
             <thead>
               <tr>
-                <th>#</th>
-                <th>レアリティ</th>
+                <th onClick={() => changeSortKey('index')}>#{sortKey === 'index' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('reality')}>レアリティ{sortKey === 'reality' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
                 <th>二つ名</th>
-                <th>名前</th>
-                <th>属性</th>
-                <th>HP</th>
-                <th>攻撃</th>
-                <th>防御</th>
-                <th>魔力</th>
-                <th>敏捷</th>
-                <th>幸運</th>
-                <th>回避率</th>
-                <th>反撃率</th>
-                <th>即死率</th>
+                <th onClick={() => changeSortKey('iris_name')}>名前{sortKey === 'iris_name' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('type')}>属性{sortKey === 'type' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('hp')}>HP{sortKey === 'hp' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('attack')}>攻撃{sortKey === 'attack' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('defence')}>防御{sortKey === 'defence' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('magic')}>魔力{sortKey === 'magic' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('speed')}>敏捷{sortKey === 'speed' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('lucky')}>幸運{sortKey === 'lucky' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('evade')}>回避率{sortKey === 'evade' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('counter')}>反撃率{sortKey === 'counter' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                <th onClick={() => changeSortKey('death')}>即死率{sortKey === 'death' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
               </tr>
             </thead>
             <tbody>
-              {clothingList.map(clothing => <tr key={clothing.index}>
+              {clothingList2.map(clothing => <tr key={clothing.index}>
                 <td>{clothing.index}</td>
                 <td>{clothing.reality}</td>
                 <td>{clothing.nickname}</td>
