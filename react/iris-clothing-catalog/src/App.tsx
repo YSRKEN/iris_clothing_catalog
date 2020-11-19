@@ -24,11 +24,53 @@ interface IrisClothing {
   death: number;
 };
 
+const loadClothingData = async (): Promise<IrisClothing[]> => {
+  const res = await fetch('./list.json');
+  if (!res.ok) {
+    return [];
+  }
+  const res2 = await res.json();
+  return res2.map((d: IrisClothing, i: number) => {
+    return { ...d, index: i + 1 };
+  });
+};
+
+const compareClothing = (a: IrisClothing, b: IrisClothing, sortKey: SortKey, sortOrder: SortOrder) => {
+  const aVal = (a as { [key: string]: any })[sortKey as string];
+  const bVal = (b as { [key: string]: any })[sortKey as string];
+  if (aVal < bVal) {
+    return sortOrder === 'ascending' ? -1 : 1;
+  } else if (aVal > bVal) {
+    return sortOrder === 'ascending' ? 1 : -1;
+  } else {
+    return 0;
+  }
+};
+
 
 const Title: React.FC = () => (<>
   <h1 className="d-none d-sm-inline">{APPLICATION_TITLE}</h1>
   <h3 className="d-inline d-sm-none">{APPLICATION_TITLE}</h3>
 </>);
+
+const ClothingRecord: React.FC<{ clothing: IrisClothing }> = ({ clothing }) => (
+  <tr>
+    <td>{clothing.index}</td>
+    <td>{clothing.reality}</td>
+    <td>{clothing.nickname}</td>
+    <td>{clothing.iris_name}</td>
+    <td>{clothing.type}</td>
+    <td>{clothing.hp}</td>
+    <td>{clothing.attack}</td>
+    <td>{clothing.defence}</td>
+    <td>{clothing.magic}</td>
+    <td>{clothing.speed}</td>
+    <td>{clothing.lucky}</td>
+    <td>{clothing.evade}</td>
+    <td>{clothing.counter}</td>
+    <td>{clothing.death}</td>
+  </tr>
+);
 
 const App: React.FC = () => {
   const [clothingList, setClothingList] = useState<IrisClothing[]>([]);
@@ -37,48 +79,14 @@ const App: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<SortOrder>('ascending');
 
   useEffect(() => {
-    fetch('./list.json').then(res => {
-      if (res.ok) {
-        res.json().then(data => {
-          setClothingList(data.map((d: IrisClothing, i: number) => {
-            return { ...d, index: i + 1 };
-          }));
-        });
-      }
-    });
+    loadClothingData().then(data => setClothingList(data));
   }, []);
 
   useEffect(() => {
-    console.log(sortKey);
-    console.log(sortOrder);
     if (sortKey === '') {
       setClothingList2(clothingList);
     } else {
-      if (sortOrder === 'ascending') {
-        setClothingList2(Array.from(clothingList).sort((a: IrisClothing, b: IrisClothing) => {
-          const aVal = (a as { [key: string]: any })[sortKey as string];
-          const bVal = (b as { [key: string]: any })[sortKey as string];
-          if (aVal < bVal) {
-            return -1;
-          } else if (aVal > bVal) {
-            return 1;
-          } else {
-            return 0;
-          }
-        }));
-      } else {
-        setClothingList2(Array.from(clothingList).sort((a: IrisClothing, b: IrisClothing) => {
-          const aVal = (a as { [key: string]: any })[sortKey as string];
-          const bVal = (b as { [key: string]: any })[sortKey as string];
-          if (aVal < bVal) {
-            return 1;
-          } else if (aVal > bVal) {
-            return -1;
-          } else {
-            return 0;
-          }
-        }));
-      }
+      setClothingList2(Array.from(clothingList).sort((a, b) => compareClothing(a, b, sortKey, sortOrder)));
     }
   }, [clothingList, sortKey, sortOrder]);
 
@@ -86,12 +94,12 @@ const App: React.FC = () => {
     if (sortKey !== key) {
       setSortKey(key);
       setSortOrder('ascending');
+      return;
+    }
+    if (sortOrder === 'ascending') {
+      setSortOrder('descending');
     } else {
-      if (sortOrder === 'ascending') {
-        setSortOrder('descending');
-      } else if (sortOrder === 'descending') {
-        setSortKey('');
-      }
+      setSortKey('');
     }
   };
 
@@ -124,22 +132,7 @@ const App: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {clothingList2.map(clothing => <tr key={clothing.index}>
-                <td>{clothing.index}</td>
-                <td>{clothing.reality}</td>
-                <td>{clothing.nickname}</td>
-                <td>{clothing.iris_name}</td>
-                <td>{clothing.type}</td>
-                <td>{clothing.hp}</td>
-                <td>{clothing.attack}</td>
-                <td>{clothing.defence}</td>
-                <td>{clothing.magic}</td>
-                <td>{clothing.speed}</td>
-                <td>{clothing.lucky}</td>
-                <td>{clothing.evade}</td>
-                <td>{clothing.counter}</td>
-                <td>{clothing.death}</td>
-              </tr>)}
+              {clothingList2.map(clothing => <ClothingRecord key={clothing.index} clothing={clothing} />)}
             </tbody>
           </Table>
         </Col>
