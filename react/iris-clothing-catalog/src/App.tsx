@@ -7,7 +7,7 @@ type SortKey = '' | 'index' | 'reality' | 'iris_name' | 'type' | 'hp' | 'attack'
 
 type SortOrder = 'ascending' | 'descending';
 
-type ActionType = 'changeSortKey' | 'changeFilterStatus' | 'setSelectedClothNickname' | 'setShowDetailModalFlg';
+type ActionType = 'changeSortKey' | 'changeFilterStatus' | 'setSelectedClothNickname' | 'setShowDetailModalFlg' | 'setSelectedSkillWord';
 
 interface Skill {
   type: '萌技' | 'スキル' | 'アビリティ';
@@ -40,6 +40,7 @@ interface Action {
 }
 
 interface Store {
+  clothingList: IrisClothing[];
   filteredClothingList: IrisClothing[];
   sortKey: SortKey;
   sortOrder: SortOrder;
@@ -48,6 +49,7 @@ interface Store {
   selectedNameList: string[];
   selectedClothNickname: string;
   showDetailModalFlg: boolean;
+  selectedSkillWord: string;
   dispatch: (action: Action) => void;
 };
 
@@ -119,7 +121,7 @@ const useStore = (): Store => {
   const [selectedNameList, setSelectedNameList] = useState<string[]>([]);
   const [selectedClothNickname, setSelectedClothNickname] = useState('');
   const [showDetailModalFlg, setShowDetailModalFlg] = useState(false);
-
+  const [selectedSkillWord, setSelectedSkillWord] = useState('');
 
   useEffect(() => {
     loadClothingData().then(data => setClothingList(data));
@@ -147,8 +149,20 @@ const useStore = (): Store => {
         return false;
       });
     }
+    if (selectedSkillWord !== '') {
+      newClothingList = newClothingList.filter(c => {
+        console.log(c);
+        if (c.skill_list.length === 0) {
+          return false;
+        }
+        if (c.skill_list.filter(s => s.message.includes(selectedSkillWord)).length > 0) {
+          return true;
+        }
+        return false;
+      });
+    }
     setFilteredClothingList(newClothingList);
-  }, [clothingList, sortKey, sortOrder, selectedRealityList, selectedTypeList, selectedNameList]);
+  }, [clothingList, sortKey, sortOrder, selectedRealityList, selectedTypeList, selectedNameList, selectedSkillWord]);
 
   const dispatch = (action: Action) => {
     switch (action.type) {
@@ -202,10 +216,14 @@ const useStore = (): Store => {
       case 'setShowDetailModalFlg':
         setShowDetailModalFlg((action.message as string) === 'true');
         break;
+      case 'setSelectedSkillWord':
+        setSelectedSkillWord(action.message as string);
+        break;
     }
   };
 
   return {
+    clothingList,
     filteredClothingList,
     sortKey,
     sortOrder,
@@ -214,6 +232,7 @@ const useStore = (): Store => {
     selectedNameList,
     selectedClothNickname,
     showDetailModalFlg,
+    selectedSkillWord,
     dispatch,
   };
 };
@@ -293,7 +312,7 @@ const FilterButtonList: React.FC<{
   return (
     <Form.Group>
       <Form.Label><strong>{title}</strong> ({selectedNameList.length}件選択)</Form.Label><br />
-      {nameList.map((buttonName) => <Button className="mr-3 mb-3"
+      {nameList.map((buttonName) => <Button key={buttonName} className="mr-3 mb-3"
         variant={selectedNameList.includes(buttonName) ? "secondary" : "outline-secondary"}
         onClick={() => onClickButton(buttonName)}>{buttonName}</Button>)}
     </Form.Group>
@@ -304,7 +323,7 @@ const ClothDetailModal: React.FC = () => {
   const {
     showDetailModalFlg,
     selectedClothNickname,
-    filteredClothingList,
+    clothingList,
     dispatch,
   } = useContext(Context);
 
@@ -314,7 +333,7 @@ const ClothDetailModal: React.FC = () => {
     return <></>;
   }
 
-  const clothData = filteredClothingList.filter(c => c.nickname === selectedClothNickname)[0];
+  const clothData = clothingList.filter(c => c.nickname === selectedClothNickname)[0];
   const specialList = clothData.skill_list.filter(s => s.type === '萌技');
   const skillList = clothData.skill_list.filter(s => s.type === 'スキル');
   const abilityList = clothData.skill_list.filter(s => s.type === 'アビリティ');
@@ -358,6 +377,8 @@ const MainForm: React.FC = () => {
     selectedRealityList,
     selectedTypeList,
     selectedNameList,
+    selectedSkillWord,
+    dispatch,
   } = useContext(Context);
 
   const [showModalFlg, setShowModalFlg] = useState(false);
@@ -415,6 +436,12 @@ const MainForm: React.FC = () => {
             <FilterButtonList title="レアリティ" nameList={REALITY_LIST} selectedNameList={selectedRealityList} />
             <FilterButtonList title="属性" nameList={TYPE_LIST} selectedNameList={selectedTypeList} />
             <FilterButtonList title="名前" nameList={NAME_LIST} selectedNameList={selectedNameList} />
+            <Form.Group>
+              <Form.Label><strong>萌技・スキル・アビリティ</strong></Form.Label><br />
+              <Form.Control value={selectedSkillWord}
+                placeholder="入力した文字が含まれるもののみ表示"
+                onChange={(e) => dispatch({ type: 'setSelectedSkillWord', message: e.currentTarget.value })} />
+            </Form.Group>
           </Form>
         </Modal.Body>
         <Modal.Footer>
