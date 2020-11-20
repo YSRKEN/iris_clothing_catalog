@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Col, Container, Form, Row, Table } from 'react-bootstrap';
+import { Button, Col, Container, Form, Modal, Row, Table } from 'react-bootstrap';
 
 const APPLICATION_TITLE = 'めーおーの聖装カタログ';
 
@@ -77,6 +77,7 @@ const App: React.FC = () => {
   const [clothingList2, setClothingList2] = useState<IrisClothing[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('ascending');
+  const [showModalFlg, setShowModalFlg] = useState(false);
 
   useEffect(() => {
     loadClothingData().then(data => setClothingList(data));
@@ -103,52 +104,128 @@ const App: React.FC = () => {
     }
   };
 
+  const onSohwModal = () => {
+    setShowModalFlg(true);
+  };
+
+  const onCloseModal = () => {
+    setShowModalFlg(false);
+  };
+
+  const onCancelModal = () => {
+    setShowModalFlg(false);
+  };
+
   return (
-    <Container>
-      <Row className="my-3">
-        <Col className="text-center">
-          <Title />
-        </Col>
-      </Row>
-      <Row className="my-3">
-        <Col>
-          <h2>検索条件</h2>
-          <Form className="mt-3">
+    <>
+      <Container>
+        <Row className="my-3">
+          <Col className="text-center">
+            <Title />
+          </Col>
+        </Row>
+        <Row className="my-3">
+          <Col>
+            <h2>検索条件</h2>
+            <Form className="mt-3">
+              <Form.Group>
+                <Button onClick={onSohwModal}>＋</Button>
+              </Form.Group>
+            </Form>
+          </Col>
+        </Row>
+        <Row className="my-3">
+          <Col>
+            <h2>検索結果</h2>
+            <Table className="text-center" size="sm" striped>
+              <thead>
+                <tr>
+                  <th onClick={() => changeSortKey('index')}>#{sortKey === 'index' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('reality')}>レアリティ{sortKey === 'reality' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th>二つ名</th>
+                  <th onClick={() => changeSortKey('iris_name')}>名前{sortKey === 'iris_name' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('type')}>属性{sortKey === 'type' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('hp')}>HP{sortKey === 'hp' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('attack')}>攻撃{sortKey === 'attack' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('defence')}>防御{sortKey === 'defence' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('magic')}>魔力{sortKey === 'magic' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('speed')}>敏捷{sortKey === 'speed' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('lucky')}>幸運{sortKey === 'lucky' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('evade')}>回避率{sortKey === 'evade' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('counter')}>反撃率{sortKey === 'counter' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                  <th onClick={() => changeSortKey('death')}>即死率{sortKey === 'death' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {clothingList2.map(clothing => <ClothingRecord key={clothing.index} clothing={clothing} />)}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+      </Container>
+      <Modal show={showModalFlg} onHide={onCancelModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>検索条件を追加</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form>
             <Form.Group>
-              <Button>＋</Button>
+              <Form.Label><strong>レアリティ</strong></Form.Label><br />
+              <Button className="mr-3" variant="outline-secondary">SSR</Button>
+              <Button className="mr-3" variant="outline-secondary">SR</Button>
+              <Button className="mr-3" variant="outline-secondary">R</Button>
+              <Button className="mr-3" variant="outline-secondary">N</Button>
+            </Form.Group>
+            <Form.Group>
+              <Form.Label><strong>属性</strong></Form.Label><br />
+              <Button className="mr-3" variant="outline-secondary">力</Button>
+              <Button className="mr-3" variant="outline-secondary">芸</Button>
+              <Button className="mr-3" variant="outline-secondary">知</Button>
+              <Button className="mr-3" variant="outline-secondary">理</Button>
+              <Button className="mr-3" variant="outline-secondary">心</Button>
+            </Form.Group>
+            <Form.Group>
+              <Form.Label><strong>名前</strong></Form.Label><br />
+              <Button className="mr-3 mb-3" variant="outline-secondary">アシュリー</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">クリス</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ソフィ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ラディス</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ベアトリーチェ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">コト</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">クレア</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">パトリシア</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">フランチェスカ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ポリン</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">エルミナ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">セシル</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ティセ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">イリーナ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ファム</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ラウラ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">クルチャ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ヴァレリア</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">シャロン</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ウィル</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ルージェニア</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">プリシラ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">リディア</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ギゼリック</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">ナジャ</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">アナスチガル</Button>
+              <Button className="mr-3 mb-3" variant="outline-secondary">その他</Button>
             </Form.Group>
           </Form>
-        </Col>
-      </Row>
-      <Row className="my-3">
-        <Col>
-          <h2>検索結果</h2>
-          <Table className="text-center" size="sm" striped>
-            <thead>
-              <tr>
-                <th onClick={() => changeSortKey('index')}>#{sortKey === 'index' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('reality')}>レアリティ{sortKey === 'reality' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th>二つ名</th>
-                <th onClick={() => changeSortKey('iris_name')}>名前{sortKey === 'iris_name' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('type')}>属性{sortKey === 'type' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('hp')}>HP{sortKey === 'hp' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('attack')}>攻撃{sortKey === 'attack' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('defence')}>防御{sortKey === 'defence' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('magic')}>魔力{sortKey === 'magic' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('speed')}>敏捷{sortKey === 'speed' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('lucky')}>幸運{sortKey === 'lucky' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('evade')}>回避率{sortKey === 'evade' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('counter')}>反撃率{sortKey === 'counter' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-                <th onClick={() => changeSortKey('death')}>即死率{sortKey === 'death' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clothingList2.map(clothing => <ClothingRecord key={clothing.index} clothing={clothing} />)}
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
-    </Container>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={onCancelModal}>
+            キャンセル
+          </Button>
+          <Button variant="primary" onClick={onCloseModal}>
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </>
   );
 }
 
