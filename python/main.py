@@ -1,6 +1,6 @@
-from typing import List
+from typing import List, Dict
 
-from model.IrisClothing import IrisClothing
+from model.IrisClothing import IrisClothing, Skill
 from service.LxmlScrapingService import LxmlScrapingService
 
 if __name__ == '__main__':
@@ -46,6 +46,7 @@ if __name__ == '__main__':
             reality = ''
 
         for tr_tag in table_tag.find_all('tbody > tr'):
+            # 基礎データを取得
             td_text_list = [x.full_text for x in tr_tag.find_all('td')]
             cloth_name = td_text_list[name_index]
             cloth_type = td_text_list[type_index]
@@ -58,10 +59,34 @@ if __name__ == '__main__':
             cloth_evade = td_text_list[evade_index]
             cloth_counter = td_text_list[counter_index]
             cloth_death = td_text_list[death_index]
-            cloth_link = tr_tag.find_all('td')[name_index].find('a').attrs['href']
             temp = cloth_name.split('】')
             nickname = temp[0].replace('【', '')
             iris_name = temp[1]
+            print(f'{reality} 【{nickname}】{iris_name}')
+
+            # 萌技・スキル・アビリティを取得
+            cloth_link = tr_tag.find_all('td')[name_index].find('a').attrs['href']
+            dom2 = scraping.get_page(cloth_link, 'utf-8')
+            skill_list: List[Skill] = []
+            for table_tag2 in dom2.find_all('table'):
+                # ヘッダーから、スキルアビリティかどうかの検討をつける
+                tbody_tag2 = table_tag2.find('tbody')
+                if tbody_tag2 is None:
+                    continue
+                tbody2_text = tbody_tag2.full_text
+                if '分類' not in tbody2_text:
+                    continue
+                # 読み取り
+                record_type = ''
+                for tr_tag2 in table_tag2.find_all('tbody > tr'):
+                    th_tag = tr_tag2.find('th')
+                    td_tags = tr_tag2.find_all('td')
+                    if len(td_tags) == 0:
+                        continue
+                    if th_tag is not None:
+                        record_type = th_tag.text
+                    skill_list.append(Skill(type=record_type, name=td_tags[1].text, message=td_tags[2].text))
+
             cloth_data = IrisClothing(
                 reality=reality,
                 nickname=nickname,
@@ -77,6 +102,7 @@ if __name__ == '__main__':
                 counter=cloth_counter,
                 death=cloth_death,
                 link=cloth_link,
+                skill_list=skill_list
             )
             if len([x for x in data_list if x.nickname == cloth_data.nickname]) == 0:
                 data_list.append(cloth_data)
