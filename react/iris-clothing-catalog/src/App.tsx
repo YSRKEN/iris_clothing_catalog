@@ -9,6 +9,12 @@ type SortOrder = 'ascending' | 'descending';
 
 type ActionType = 'changeSortKey' | 'changeFilterStatus';
 
+interface Skill {
+  type: '萌技' | 'スキル' | 'アビリティ';
+  name: string;
+  message: string;
+};
+
 interface IrisClothing {
   index: number;
   reality: string;
@@ -24,6 +30,8 @@ interface IrisClothing {
   evade: number;
   counter: number;
   death: number;
+  link: string;
+  skill_list: Skill[];
 };
 
 interface Action {
@@ -233,7 +241,7 @@ const ClothingRecord: React.FC<{ clothing: IrisClothing }> = ({ clothing }) => (
   <tr>
     <td>{clothing.index}</td>
     <td>{clothing.reality}</td>
-    <td>{clothing.nickname}</td>
+    <td><a href={clothing.link} target="_blank" rel="noreferrer">{clothing.nickname}</a></td>
     <td>{clothing.iris_name}</td>
     <td>{clothing.type}</td>
     <td>{clothing.hp}</td>
