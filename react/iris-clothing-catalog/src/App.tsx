@@ -24,6 +24,39 @@ interface IrisClothing {
   death: number;
 };
 
+const REALITY_LIST = ['SSR', 'SR', 'R', 'N'];
+
+const TYPE_LIST = ['力', '芸', '知', '理', '心'];
+
+const NAME_LIST = ["アシュリー",
+  "クリス",
+  "ソフィ",
+  "ラディス",
+  "ベアトリーチェ",
+  "コト",
+  "クレア",
+  "パトリシア",
+  "フランチェスカ",
+  "ポリン",
+  "エルミナ",
+  "セシル",
+  "ティセ",
+  "イリーナ",
+  "ファム",
+  "ラウラ",
+  "クルチャ",
+  "ヴァレリア",
+  "シャロン",
+  "ウィル",
+  "ルージェニア",
+  "プリシラ",
+  "リディア",
+  "ギゼリック",
+  "ナジャ",
+  "アナスチガル",
+  "その他"
+];
+
 const loadClothingData = async (): Promise<IrisClothing[]> => {
   const res = await fetch('./list.json');
   if (!res.ok) {
@@ -72,12 +105,27 @@ const ClothingRecord: React.FC<{ clothing: IrisClothing }> = ({ clothing }) => (
   </tr>
 );
 
+const FilterButtonList: React.FC<{
+  title: string,
+  nameList: string[],
+  selectedNameList: string[]
+}> = ({ title, nameList, selectedNameList }) => (
+  <Form.Group>
+    <Form.Label><strong>{title}</strong></Form.Label><br />
+    {nameList.map((buttonName) => <Button className="mr-3 mb-3"
+      variant={selectedNameList.includes(buttonName) ? "secondary" : "outline-secondary"}>{buttonName}</Button>)}
+  </Form.Group>
+);
+
 const App: React.FC = () => {
   const [clothingList, setClothingList] = useState<IrisClothing[]>([]);
   const [clothingList2, setClothingList2] = useState<IrisClothing[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('ascending');
   const [showModalFlg, setShowModalFlg] = useState(false);
+  const [selectedRealityList] = useState<string[]>([]);
+  const [selectedTypeList] = useState<string[]>([]);
+  const [selectedNameList] = useState<string[]>([]);
 
   useEffect(() => {
     loadClothingData().then(data => setClothingList(data));
@@ -169,51 +217,9 @@ const App: React.FC = () => {
         </Modal.Header>
         <Modal.Body>
           <Form>
-            <Form.Group>
-              <Form.Label><strong>レアリティ</strong></Form.Label><br />
-              <Button className="mr-3" variant="outline-secondary">SSR</Button>
-              <Button className="mr-3" variant="outline-secondary">SR</Button>
-              <Button className="mr-3" variant="outline-secondary">R</Button>
-              <Button className="mr-3" variant="outline-secondary">N</Button>
-            </Form.Group>
-            <Form.Group>
-              <Form.Label><strong>属性</strong></Form.Label><br />
-              <Button className="mr-3" variant="outline-secondary">力</Button>
-              <Button className="mr-3" variant="outline-secondary">芸</Button>
-              <Button className="mr-3" variant="outline-secondary">知</Button>
-              <Button className="mr-3" variant="outline-secondary">理</Button>
-              <Button className="mr-3" variant="outline-secondary">心</Button>
-            </Form.Group>
-            <Form.Group>
-              <Form.Label><strong>名前</strong></Form.Label><br />
-              <Button className="mr-3 mb-3" variant="outline-secondary">アシュリー</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">クリス</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ソフィ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ラディス</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ベアトリーチェ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">コト</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">クレア</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">パトリシア</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">フランチェスカ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ポリン</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">エルミナ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">セシル</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ティセ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">イリーナ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ファム</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ラウラ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">クルチャ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ヴァレリア</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">シャロン</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ウィル</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ルージェニア</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">プリシラ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">リディア</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ギゼリック</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">ナジャ</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">アナスチガル</Button>
-              <Button className="mr-3 mb-3" variant="outline-secondary">その他</Button>
-            </Form.Group>
+            <FilterButtonList title="レアリティ" nameList={REALITY_LIST} selectedNameList={selectedRealityList} />
+            <FilterButtonList title="属性" nameList={TYPE_LIST} selectedNameList={selectedTypeList} />
+            <FilterButtonList title="名前" nameList={NAME_LIST} selectedNameList={selectedNameList} />
           </Form>
         </Modal.Body>
         <Modal.Footer>
