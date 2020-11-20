@@ -7,7 +7,7 @@ type SortKey = '' | 'index' | 'reality' | 'iris_name' | 'type' | 'hp' | 'attack'
 
 type SortOrder = 'ascending' | 'descending';
 
-type ActionType = 'changeSortKey';
+type ActionType = 'changeSortKey' | 'changeFilterStatus';
 
 interface IrisClothing {
   index: number;
@@ -102,9 +102,9 @@ const useStore = (): Store => {
   const [filteredClothingList, setFilteredClothingList] = useState<IrisClothing[]>([]);
   const [sortKey, setSortKey] = useState<SortKey>('');
   const [sortOrder, setSortOrder] = useState<SortOrder>('ascending');
-  const [selectedRealityList] = useState<string[]>([]);
-  const [selectedTypeList] = useState<string[]>([]);
-  const [selectedNameList] = useState<string[]>([]);
+  const [selectedRealityList, setSelectedRealityList] = useState<string[]>([]);
+  const [selectedTypeList, setSelectedTypeList] = useState<string[]>([]);
+  const [selectedNameList, setSelectedNameList] = useState<string[]>([]);
 
   useEffect(() => {
     loadClothingData().then(data => setClothingList(data));
@@ -125,13 +125,42 @@ const useStore = (): Store => {
         if (sortKey !== key) {
           setSortKey(key);
           setSortOrder('ascending');
-          return;
+          break;
         }
         if (sortOrder === 'ascending') {
           setSortOrder('descending');
         } else {
           setSortKey('');
         }
+        break;
+      };
+      case 'changeFilterStatus': {
+        const temp = (action.message as string).split(',');
+        const filterType = temp[0];
+        const name = temp[1];
+        switch (filterType) {
+          case 'レアリティ':
+            if (selectedRealityList.includes(name)) {
+              setSelectedRealityList([...selectedRealityList].filter(n => n !== name));
+            } else {
+              setSelectedRealityList([...selectedRealityList, name]);
+            };
+            break;
+          case '属性':
+            if (selectedTypeList.includes(name)) {
+              setSelectedTypeList([...selectedTypeList].filter(n => n !== name));
+            } else {
+              setSelectedTypeList([...selectedTypeList, name]);
+            };
+            break;
+          case '名前':
+            if (selectedNameList.includes(name)) {
+              setSelectedNameList([...selectedNameList].filter(n => n !== name));
+            } else {
+              setSelectedNameList([...selectedNameList, name]);
+            };
+            break;
+        };
       };
     }
   };
@@ -204,13 +233,22 @@ const FilterButtonList: React.FC<{
   title: string,
   nameList: string[],
   selectedNameList: string[]
-}> = ({ title, nameList, selectedNameList }) => (
-  <Form.Group>
-    <Form.Label><strong>{title}</strong></Form.Label><br />
-    {nameList.map((buttonName) => <Button className="mr-3 mb-3"
-      variant={selectedNameList.includes(buttonName) ? "secondary" : "outline-secondary"}>{buttonName}</Button>)}
-  </Form.Group>
-);
+}> = ({ title, nameList, selectedNameList }) => {
+  const { dispatch } = useContext(Context);
+
+  const onClickButton = (name: string) => {
+    dispatch({ type: 'changeFilterStatus', message: `${title},${name}` });
+  };
+
+  return (
+    <Form.Group>
+      <Form.Label><strong>{title}</strong></Form.Label><br />
+      {nameList.map((buttonName) => <Button className="mr-3 mb-3"
+        variant={selectedNameList.includes(buttonName) ? "secondary" : "outline-secondary"}
+        onClick={() => onClickButton(buttonName)}>{buttonName}</Button>)}
+    </Form.Group>
+  );
+};
 
 const MainForm: React.FC = () => {
   const {
