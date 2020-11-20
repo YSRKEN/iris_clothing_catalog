@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Button, Col, Container, Form, Modal, Row, Table } from 'react-bootstrap';
 
 const APPLICATION_TITLE = 'めーおーの聖装カタログ';
@@ -147,6 +147,8 @@ const useStore = (): Store => {
   };
 };
 
+const Context = createContext<Store>({} as Store);
+
 const Title: React.FC = () => (<>
   <h1 className="d-none d-sm-inline">{APPLICATION_TITLE}</h1>
   <h3 className="d-inline d-sm-none">{APPLICATION_TITLE}</h3>
@@ -183,7 +185,7 @@ const FilterButtonList: React.FC<{
   </Form.Group>
 );
 
-const App: React.FC = () => {
+const MainForm: React.FC = () => {
   const {
     filteredClothingList,
     sortKey,
@@ -192,7 +194,8 @@ const App: React.FC = () => {
     selectedTypeList,
     selectedNameList,
     dispatch
-  } = useStore();
+  } = useContext(Context);
+
   const [showModalFlg, setShowModalFlg] = useState(false);
 
   const changeSortKey = (key: SortKey) => dispatch({ type: 'changeSortKey', message: key as string });
@@ -278,6 +281,12 @@ const App: React.FC = () => {
       </Modal>
     </>
   );
+};
+
+const App: React.FC = () => {
+  return <Context.Provider value={useStore()}>
+    <MainForm />
+  </Context.Provider>;
 }
 
 export default App;
