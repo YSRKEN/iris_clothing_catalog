@@ -7,6 +7,8 @@ type SortKey = '' | 'index' | 'reality' | 'iris_name' | 'type' | 'hp' | 'attack'
 
 type SortOrder = 'ascending' | 'descending';
 
+type ActionType = 'changeSortKey';
+
 interface IrisClothing {
   index: number;
   reality: string;
@@ -22,6 +24,21 @@ interface IrisClothing {
   evade: number;
   counter: number;
   death: number;
+};
+
+interface Action {
+  type: ActionType;
+  message?: string;
+}
+
+interface Store {
+  filteredClothingList: IrisClothing[];
+  sortKey: SortKey;
+  sortOrder: SortOrder;
+  selectedRealityList: string[];
+  selectedTypeList: string[];
+  selectedNameList: string[];
+  dispatch: (action: Action) => void;
 };
 
 const REALITY_LIST = ['SSR', 'SR', 'R', 'N'];
@@ -80,6 +97,55 @@ const compareClothing = (a: IrisClothing, b: IrisClothing, sortKey: SortKey, sor
   }
 };
 
+const useStore = (): Store => {
+  const [clothingList, setClothingList] = useState<IrisClothing[]>([]);
+  const [filteredClothingList, setFilteredClothingList] = useState<IrisClothing[]>([]);
+  const [sortKey, setSortKey] = useState<SortKey>('');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('ascending');
+  const [selectedRealityList] = useState<string[]>([]);
+  const [selectedTypeList] = useState<string[]>([]);
+  const [selectedNameList] = useState<string[]>([]);
+
+  useEffect(() => {
+    loadClothingData().then(data => setClothingList(data));
+  }, []);
+
+  useEffect(() => {
+    if (sortKey === '') {
+      setFilteredClothingList(clothingList);
+    } else {
+      setFilteredClothingList(Array.from(clothingList).sort((a, b) => compareClothing(a, b, sortKey, sortOrder)));
+    }
+  }, [clothingList, sortKey, sortOrder]);
+
+  const dispatch = (action: Action) => {
+    switch (action.type) {
+      case 'changeSortKey': {
+        const key = action.message as SortKey;
+        if (sortKey !== key) {
+          setSortKey(key);
+          setSortOrder('ascending');
+          return;
+        }
+        if (sortOrder === 'ascending') {
+          setSortOrder('descending');
+        } else {
+          setSortKey('');
+        }
+      };
+    }
+  };
+
+  return {
+    filteredClothingList,
+    sortKey,
+    sortOrder,
+    selectedRealityList,
+    selectedTypeList,
+    selectedNameList,
+    dispatch,
+  };
+};
 
 const Title: React.FC = () => (<>
   <h1 className="d-none d-sm-inline">{APPLICATION_TITLE}</h1>
@@ -118,41 +184,20 @@ const FilterButtonList: React.FC<{
 );
 
 const App: React.FC = () => {
-  const [clothingList, setClothingList] = useState<IrisClothing[]>([]);
-  const [clothingList2, setClothingList2] = useState<IrisClothing[]>([]);
-  const [sortKey, setSortKey] = useState<SortKey>('');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('ascending');
+  const {
+    filteredClothingList,
+    sortKey,
+    sortOrder,
+    selectedRealityList,
+    selectedTypeList,
+    selectedNameList,
+    dispatch
+  } = useStore();
   const [showModalFlg, setShowModalFlg] = useState(false);
-  const [selectedRealityList] = useState<string[]>([]);
-  const [selectedTypeList] = useState<string[]>([]);
-  const [selectedNameList] = useState<string[]>([]);
 
-  useEffect(() => {
-    loadClothingData().then(data => setClothingList(data));
-  }, []);
+  const changeSortKey = (key: SortKey) => dispatch({ type: 'changeSortKey', message: key as string });
 
-  useEffect(() => {
-    if (sortKey === '') {
-      setClothingList2(clothingList);
-    } else {
-      setClothingList2(Array.from(clothingList).sort((a, b) => compareClothing(a, b, sortKey, sortOrder)));
-    }
-  }, [clothingList, sortKey, sortOrder]);
-
-  const changeSortKey = (key: SortKey) => {
-    if (sortKey !== key) {
-      setSortKey(key);
-      setSortOrder('ascending');
-      return;
-    }
-    if (sortOrder === 'ascending') {
-      setSortOrder('descending');
-    } else {
-      setSortKey('');
-    }
-  };
-
-  const onSohwModal = () => {
+  const onShowModal = () => {
     setShowModalFlg(true);
   };
 
@@ -177,7 +222,7 @@ const App: React.FC = () => {
             <h2>検索条件</h2>
             <Form className="mt-3">
               <Form.Group>
-                <Button onClick={onSohwModal}>＋</Button>
+                <Button onClick={onShowModal}>＋</Button>
               </Form.Group>
             </Form>
           </Col>
@@ -205,7 +250,7 @@ const App: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {clothingList2.map(clothing => <ClothingRecord key={clothing.index} clothing={clothing} />)}
+                {filteredClothingList.map(clothing => <ClothingRecord key={clothing.index} clothing={clothing} />)}
               </tbody>
             </Table>
           </Col>
