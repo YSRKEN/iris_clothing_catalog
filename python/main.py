@@ -85,7 +85,13 @@ if __name__ == '__main__':
                         continue
                     if th_tag is not None:
                         record_type = th_tag.text
-                    skill_list.append(Skill(type=record_type, name=td_tags[1].text, message=td_tags[2].text))
+                    # テキスト修正対策
+                    message_text = td_tags[2].full_text
+                    temp2 = td_tags[2].find_all('del')
+                    if len(temp2) > 0:
+                        for del_tag in temp2:
+                            message_text = message_text.replace(del_tag.full_text, '')
+                    skill_list.append(Skill(type=record_type, name=td_tags[1].text, message=message_text))
 
             cloth_data = IrisClothing(
                 reality=reality,
@@ -106,6 +112,7 @@ if __name__ == '__main__':
             )
             if len([x for x in data_list if x.nickname == cloth_data.nickname]) == 0:
                 data_list.append(cloth_data)
+                print(cloth_data)
 
     # 保存
     with open('list.json', 'w', encoding='UTF-8') as f:
