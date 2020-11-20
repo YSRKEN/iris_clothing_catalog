@@ -242,7 +242,7 @@ const FilterButtonList: React.FC<{
 
   return (
     <Form.Group>
-      <Form.Label><strong>{title}</strong></Form.Label><br />
+      <Form.Label><strong>{title}</strong> ({selectedNameList.length}件選択)</Form.Label><br />
       {nameList.map((buttonName) => <Button className="mr-3 mb-3"
         variant={selectedNameList.includes(buttonName) ? "secondary" : "outline-secondary"}
         onClick={() => onClickButton(buttonName)}>{buttonName}</Button>)}
