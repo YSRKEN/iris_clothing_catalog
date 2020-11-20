@@ -18,3 +18,4 @@ class IrisClothing:
     evade: int
     counter: int
     death: int
+    link: str

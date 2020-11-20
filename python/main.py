@@ -58,6 +58,7 @@ if __name__ == '__main__':
             cloth_evade = td_text_list[evade_index]
             cloth_counter = td_text_list[counter_index]
             cloth_death = td_text_list[death_index]
+            cloth_link = tr_tag.find_all('td')[name_index].find('a').attrs['href']
             temp = cloth_name.split('】')
             nickname = temp[0].replace('【', '')
             iris_name = temp[1]
@@ -75,6 +76,7 @@ if __name__ == '__main__':
                 evade=cloth_evade,
                 counter=cloth_counter,
                 death=cloth_death,
+                link=cloth_link,
             )
             if len([x for x in data_list if x.nickname == cloth_data.nickname]) == 0:
                 data_list.append(cloth_data)
