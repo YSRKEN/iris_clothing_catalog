@@ -403,6 +403,14 @@ const MainForm: React.FC = () => {
             <Title />
           </Col>
         </Row>
+        <Row>
+          <Col className="text-center">
+            <span className="d-inline-block mr-3">Ver.1.0.0</span>
+            <span className="d-inline-block mr-3"><a href="https://twitter.com/YSRKEN/status/1329817752513650688" rel="noreferrer" target="_blank">使い方</a></span>
+            <span className="d-inline-block mr-3"><a href="https://github.com/YSRKEN/iris_clothing_catalog" rel="noreferrer" target="_blank">GitHub</a> </span>
+            <span><a href="https://twitter.com/YSRKEN" rel="noreferrer" target="_blank">作者のTwitter</a></span>
+          </Col>
+        </Row>
         <Row className="my-3">
           <Col>
             <h2>検索条件</h2>
