@@ -7,7 +7,7 @@ type SortKey = '' | 'index' | 'reality' | 'iris_name' | 'type' | 'hp' | 'attack'
 
 type SortOrder = 'ascending' | 'descending';
 
-type ActionType = 'changeSortKey' | 'changeFilterStatus' | 'setSelectedClothNickname';
+type ActionType = 'changeSortKey' | 'changeFilterStatus' | 'setSelectedClothNickname' | 'setShowDetailModalFlg';
 
 interface Skill {
   type: '萌技' | 'スキル' | 'アビリティ';
@@ -47,6 +47,7 @@ interface Store {
   selectedTypeList: string[];
   selectedNameList: string[];
   selectedClothNickname: string;
+  showDetailModalFlg: boolean;
   dispatch: (action: Action) => void;
 };
 
@@ -117,6 +118,8 @@ const useStore = (): Store => {
   const [selectedTypeList, setSelectedTypeList] = useState<string[]>([]);
   const [selectedNameList, setSelectedNameList] = useState<string[]>([]);
   const [selectedClothNickname, setSelectedClothNickname] = useState('');
+  const [showDetailModalFlg, setShowDetailModalFlg] = useState(false);
+
 
   useEffect(() => {
     loadClothingData().then(data => setClothingList(data));
@@ -194,6 +197,10 @@ const useStore = (): Store => {
       };
       case 'setSelectedClothNickname':
         setSelectedClothNickname(action.message as string);
+        setShowDetailModalFlg(true);
+        break;
+      case 'setShowDetailModalFlg':
+        setShowDetailModalFlg((action.message as string) === 'true');
         break;
     }
   };
@@ -206,6 +213,7 @@ const useStore = (): Store => {
     selectedTypeList,
     selectedNameList,
     selectedClothNickname,
+    showDetailModalFlg,
     dispatch,
   };
 };
@@ -298,11 +306,11 @@ const MainForm: React.FC = () => {
     selectedRealityList,
     selectedTypeList,
     selectedNameList,
+    showDetailModalFlg,
+    dispatch,
   } = useContext(Context);
 
   const [showModalFlg, setShowModalFlg] = useState(false);
-
-  const [showDetailModalFlg, setShowDetailModalFlg] = useState(true);
 
   const onShowModal = () => {
     setShowModalFlg(true);
@@ -316,7 +324,7 @@ const MainForm: React.FC = () => {
     setShowModalFlg(false);
   };
 
-  const onCloseDetailModal = () => setShowDetailModalFlg(false);
+  const onCloseDetailModal = () => dispatch({ type: 'setShowDetailModalFlg', message: 'false' });
 
   return (
     <>
