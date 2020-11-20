@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "zwsptools"
+  },
+  "targets": {
+    "zwsptools": {
+      "hosting": {
+        "iris-clothing-catalog": [
+          "iris-clothing-catalog"
+        ]
+      }
+    }
+  }
+}
