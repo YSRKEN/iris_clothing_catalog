@@ -97,7 +97,8 @@ if __name__ == '__main__':
                     if len(temp2) > 0:
                         for del_tag in temp2:
                             message_text = message_text.replace(del_tag.full_text, '')
-                    skill_list.append(Skill(type=record_type, name=td_tags[1].text, message=message_text))
+                    skill_list.append(Skill(type=record_type, name=td_tags[1].text,
+                                            message=message_text.replace('ＨＰ', 'HP')))
 
             cloth_data = IrisClothing(
                 reality=reality,
