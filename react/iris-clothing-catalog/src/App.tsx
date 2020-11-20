@@ -74,6 +74,8 @@ const NAME_LIST = ["アシュリー",
   "その他"
 ];
 
+const GUEST_LIST = ["フィーナ", "朝霧麻衣", "白崎つぐみ", "鈴木佳奈"];
+
 const loadClothingData = async (): Promise<IrisClothing[]> => {
   const res = await fetch('./list.json');
   if (!res.ok) {
@@ -111,12 +113,29 @@ const useStore = (): Store => {
   }, []);
 
   useEffect(() => {
-    if (sortKey === '') {
-      setFilteredClothingList(clothingList);
-    } else {
-      setFilteredClothingList(Array.from(clothingList).sort((a, b) => compareClothing(a, b, sortKey, sortOrder)));
+    let newClothingList = [...clothingList];
+    if (sortKey !== '') {
+      newClothingList = Array.from(clothingList).sort((a, b) => compareClothing(a, b, sortKey, sortOrder));
     }
-  }, [clothingList, sortKey, sortOrder]);
+    if (selectedRealityList.length > 0) {
+      newClothingList = newClothingList.filter(c => selectedRealityList.includes(c.reality));
+    }
+    if (selectedTypeList.length > 0) {
+      newClothingList = newClothingList.filter(c => selectedTypeList.includes(c.type));
+    }
+    if (selectedNameList.length > 0) {
+      newClothingList = newClothingList.filter(c => {
+        if (selectedNameList.includes(c.iris_name)) {
+          return true;
+        }
+        if (selectedNameList.includes('その他') && GUEST_LIST.includes(c.iris_name)) {
+          return true;
+        }
+        return false;
+      });
+    }
+    setFilteredClothingList(newClothingList);
+  }, [clothingList, sortKey, sortOrder, selectedRealityList, selectedTypeList, selectedNameList]);
 
   const dispatch = (action: Action) => {
     switch (action.type) {
@@ -285,7 +304,7 @@ const MainForm: React.FC = () => {
             <h2>検索条件</h2>
             <Form className="mt-3">
               <Form.Group>
-                <Button onClick={onShowModal}>＋</Button>
+                <Button onClick={onShowModal}>変更...</Button>
               </Form.Group>
             </Form>
           </Col>
