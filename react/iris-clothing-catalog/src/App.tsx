@@ -7,7 +7,7 @@ type SortKey = '' | 'index' | 'reality' | 'iris_name' | 'type' | 'hp' | 'attack'
 
 type SortOrder = 'ascending' | 'descending';
 
-type ActionType = 'changeSortKey' | 'changeFilterStatus';
+type ActionType = 'changeSortKey' | 'changeFilterStatus' | 'setSelectedClothNickname';
 
 interface Skill {
   type: '萌技' | 'スキル' | 'アビリティ';
@@ -46,6 +46,7 @@ interface Store {
   selectedRealityList: string[];
   selectedTypeList: string[];
   selectedNameList: string[];
+  selectedClothNickname: string;
   dispatch: (action: Action) => void;
 };
 
@@ -115,6 +116,7 @@ const useStore = (): Store => {
   const [selectedRealityList, setSelectedRealityList] = useState<string[]>([]);
   const [selectedTypeList, setSelectedTypeList] = useState<string[]>([]);
   const [selectedNameList, setSelectedNameList] = useState<string[]>([]);
+  const [selectedClothNickname, setSelectedClothNickname] = useState('');
 
   useEffect(() => {
     loadClothingData().then(data => setClothingList(data));
@@ -188,7 +190,11 @@ const useStore = (): Store => {
             };
             break;
         };
+        break;
       };
+      case 'setSelectedClothNickname':
+        setSelectedClothNickname(action.message as string);
+        break;
     }
   };
 
@@ -199,6 +205,7 @@ const useStore = (): Store => {
     selectedRealityList,
     selectedTypeList,
     selectedNameList,
+    selectedClothNickname,
     dispatch,
   };
 };
@@ -234,27 +241,35 @@ const TableHeader: React.FC = () => {
     <th onClick={() => changeSortKey('evade')}>回避率{sortKey === 'evade' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
     <th onClick={() => changeSortKey('counter')}>反撃率{sortKey === 'counter' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
     <th onClick={() => changeSortKey('death')}>即死率{sortKey === 'death' ? sortOrder === 'ascending' ? ' ↑' : ' ↓' : ''}</th>
+    <th>操作</th>
   </tr>;
 };
 
-const ClothingRecord: React.FC<{ clothing: IrisClothing }> = ({ clothing }) => (
-  <tr>
-    <td>{clothing.index}</td>
-    <td>{clothing.reality}</td>
-    <td><a href={clothing.link} target="_blank" rel="noreferrer">{clothing.nickname}</a></td>
-    <td>{clothing.iris_name}</td>
-    <td>{clothing.type}</td>
-    <td>{clothing.hp}</td>
-    <td>{clothing.attack}</td>
-    <td>{clothing.defence}</td>
-    <td>{clothing.magic}</td>
-    <td>{clothing.speed}</td>
-    <td>{clothing.lucky}</td>
-    <td>{clothing.evade}</td>
-    <td>{clothing.counter}</td>
-    <td>{clothing.death}</td>
-  </tr>
-);
+const ClothingRecord: React.FC<{ clothing: IrisClothing }> = ({ clothing }) => {
+  const { dispatch } = useContext(Context);
+
+  const onClickDetail = () => dispatch({ type: 'setSelectedClothNickname', message: clothing.nickname });
+
+  return (
+    <tr>
+      <td>{clothing.index}</td>
+      <td>{clothing.reality}</td>
+      <td><a href={clothing.link} target="_blank" rel="noreferrer">{clothing.nickname}</a></td>
+      <td>{clothing.iris_name}</td>
+      <td>{clothing.type}</td>
+      <td>{clothing.hp}</td>
+      <td>{clothing.attack}</td>
+      <td>{clothing.defence}</td>
+      <td>{clothing.magic}</td>
+      <td>{clothing.speed}</td>
+      <td>{clothing.lucky}</td>
+      <td>{clothing.evade}</td>
+      <td>{clothing.counter}</td>
+      <td>{clothing.death}</td>
+      <td><Button size="sm" variant="info" onClick={onClickDetail}>詳細...</Button></td>
+    </tr>
+  );
+};
 
 const FilterButtonList: React.FC<{
   title: string,
@@ -287,6 +302,8 @@ const MainForm: React.FC = () => {
 
   const [showModalFlg, setShowModalFlg] = useState(false);
 
+  const [showDetailModalFlg, setShowDetailModalFlg] = useState(true);
+
   const onShowModal = () => {
     setShowModalFlg(true);
   };
@@ -298,6 +315,8 @@ const MainForm: React.FC = () => {
   const onCancelModal = () => {
     setShowModalFlg(false);
   };
+
+  const onCloseDetailModal = () => setShowDetailModalFlg(false);
 
   return (
     <>
@@ -347,6 +366,19 @@ const MainForm: React.FC = () => {
             キャンセル
           </Button>
           <Button variant="primary" onClick={onCloseModal}>
+            OK
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={showDetailModalFlg} onHide={onCloseDetailModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>聖装の詳細</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          test
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="primary" onClick={onCloseDetailModal}>
             OK
           </Button>
         </Modal.Footer>
