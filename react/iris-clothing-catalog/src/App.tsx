@@ -300,14 +300,64 @@ const FilterButtonList: React.FC<{
   );
 };
 
+const ClothDetailModal: React.FC = () => {
+  const {
+    showDetailModalFlg,
+    selectedClothNickname,
+    filteredClothingList,
+    dispatch,
+  } = useContext(Context);
+
+  const onCloseDetailModal = () => dispatch({ type: 'setShowDetailModalFlg', message: 'false' });
+
+  if (selectedClothNickname === '') {
+    return <></>;
+  }
+
+  const clothData = filteredClothingList.filter(c => c.nickname === selectedClothNickname)[0];
+  const specialList = clothData.skill_list.filter(s => s.type === '萌技');
+  const skillList = clothData.skill_list.filter(s => s.type === 'スキル');
+  const abilityList = clothData.skill_list.filter(s => s.type === 'アビリティ');
+
+  return <Modal show={showDetailModalFlg} onHide={onCloseDetailModal}>
+    <Modal.Header closeButton>
+      <Modal.Title>聖装の詳細</Modal.Title>
+    </Modal.Header>
+    <Modal.Body>
+      <ul>
+        <li>聖装名：<strong>【{clothData.nickname}】{clothData.iris_name}</strong></li>
+        <li>レアリティ：<strong>{clothData.reality}</strong></li>
+        <li>属性：<strong>{clothData.type}</strong></li>
+        <li>萌技：
+          {specialList.length === 0 ? <strong>なし</strong>
+            : <span><strong>{specialList[0].name}</strong><br />({specialList[0].message})</span>}
+        </li>
+        <li>スキル：
+          <ul>
+            {skillList.map(s => <li><strong>{s.name}</strong><br />({s.message})</li>)}
+          </ul>
+        </li>
+        <li>アビリティ：
+          <ul>
+            {abilityList.map(a => <li><strong>{a.name}</strong><br />({a.message})</li>)}
+          </ul>
+        </li>
+      </ul>
+    </Modal.Body>
+    <Modal.Footer>
+      <Button variant="primary" onClick={onCloseDetailModal}>
+        OK
+    </Button>
+    </Modal.Footer>
+  </Modal>;
+};
+
 const MainForm: React.FC = () => {
   const {
     filteredClothingList,
     selectedRealityList,
     selectedTypeList,
     selectedNameList,
-    showDetailModalFlg,
-    dispatch,
   } = useContext(Context);
 
   const [showModalFlg, setShowModalFlg] = useState(false);
@@ -323,8 +373,6 @@ const MainForm: React.FC = () => {
   const onCancelModal = () => {
     setShowModalFlg(false);
   };
-
-  const onCloseDetailModal = () => dispatch({ type: 'setShowDetailModalFlg', message: 'false' });
 
   return (
     <>
@@ -378,19 +426,7 @@ const MainForm: React.FC = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-      <Modal show={showDetailModalFlg} onHide={onCloseDetailModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>聖装の詳細</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          test
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="primary" onClick={onCloseDetailModal}>
-            OK
-          </Button>
-        </Modal.Footer>
-      </Modal>
+      <ClothDetailModal />
     </>
   );
 };
