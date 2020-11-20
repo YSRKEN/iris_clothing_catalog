@@ -68,20 +68,26 @@ if __name__ == '__main__':
             cloth_link = tr_tag.find_all('td')[name_index].find('a').attrs['href']
             dom2 = scraping.get_page(cloth_link, 'utf-8')
             skill_list: List[Skill] = []
-            for table_tag2 in dom2.find_all('table'):
+            for table_tag2 in dom2.find_all('td table'):
                 # ヘッダーから、スキルアビリティかどうかの検討をつける
+                thead_tag2 = table_tag2.find('thead')
                 tbody_tag2 = table_tag2.find('tbody')
                 if tbody_tag2 is None:
                     continue
                 tbody2_text = tbody_tag2.full_text
                 if '分類' not in tbody2_text:
-                    continue
+                    if thead_tag2 is None:
+                        continue
+                    thead2_text = thead_tag2.full_text
+                    if '分類' not in thead2_text:
+                        continue
+
                 # 読み取り
                 record_type = ''
                 for tr_tag2 in table_tag2.find_all('tbody > tr'):
                     th_tag = tr_tag2.find('th')
                     td_tags = tr_tag2.find_all('td')
-                    if len(td_tags) == 0:
+                    if len(td_tags) < 3:
                         continue
                     if th_tag is not None:
                         record_type = th_tag.text
