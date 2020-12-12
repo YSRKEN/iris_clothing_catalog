@@ -25,8 +25,9 @@ class LxmlScrapingService(ScrapingService):
             text = response.text.encode(response.encoding, 'ignore').decode(response.encoding, 'ignore') \
                 .encode(response.encoding, 'ignore')
             time.sleep(1)
-            print(f'caching... [{url}]')
-            self.database.query('INSERT INTO page_cache (url, text) VALUES (?, ?)', (url, text))
+            if cache:
+                print(f'caching... [{url}]')
+                self.database.query('INSERT INTO page_cache (url, text) VALUES (?, ?)', (url, text))
             return LxmlDomObject(lxml.html.fromstring(text))
         else:
             return LxmlDomObject(lxml.html.fromstring(cache_data[0]['text']))
