@@ -50,6 +50,7 @@ interface Store {
   selectedClothNickname: string;
   showDetailModalFlg: boolean;
   selectedSkillWord: string;
+  selectedSkillList: string[];
   dispatch: (action: Action) => void;
 };
 
@@ -122,10 +123,22 @@ const useStore = (): Store => {
   const [selectedClothNickname, setSelectedClothNickname] = useState('');
   const [showDetailModalFlg, setShowDetailModalFlg] = useState(false);
   const [selectedSkillWord, setSelectedSkillWord] = useState('');
+  const [selectedSkillList, setSelectedSkillList] = useState<string[]>([]);
 
   useEffect(() => {
     loadClothingData().then(data => setClothingList(data));
   }, []);
+
+  useEffect(() => {
+    const skillList: string[] = [];
+    for (let word of selectedSkillWord.replace('　', ' ').split(' ')) {
+      if (word === '') {
+        continue;
+      }
+      skillList.push(word);
+    }
+    setSelectedSkillList(skillList);
+  }, [selectedSkillWord]);
 
   useEffect(() => {
     let newClothingList = [...clothingList];
@@ -149,20 +162,28 @@ const useStore = (): Store => {
         return false;
       });
     }
-    if (selectedSkillWord !== '') {
+    if (selectedSkillList.length >= 1) {
       newClothingList = newClothingList.filter(c => {
-        console.log(c);
         if (c.skill_list.length === 0) {
           return false;
         }
-        if (c.skill_list.filter(s => s.message.includes(selectedSkillWord)).length > 0) {
-          return true;
+        for (let keyword of selectedSkillList) {
+          let flg = false;
+          for (let skill of c.skill_list) {
+            const skillMessage = skill.message;
+            if (skillMessage.includes(keyword)) {
+              flg = true;
+            }
+          }
+          if (!flg) {
+            return false;
+          }
         }
-        return false;
+        return true;
       });
     }
     setFilteredClothingList(newClothingList);
-  }, [clothingList, sortKey, sortOrder, selectedRealityList, selectedTypeList, selectedNameList, selectedSkillWord]);
+  }, [clothingList, sortKey, sortOrder, selectedRealityList, selectedTypeList, selectedNameList, selectedSkillList]);
 
   const dispatch = (action: Action) => {
     switch (action.type) {
@@ -233,6 +254,7 @@ const useStore = (): Store => {
     selectedClothNickname,
     showDetailModalFlg,
     selectedSkillWord,
+    selectedSkillList,
     dispatch,
   };
 };
@@ -378,6 +400,7 @@ const MainForm: React.FC = () => {
     selectedTypeList,
     selectedNameList,
     selectedSkillWord,
+    selectedSkillList,
     dispatch,
   } = useContext(Context);
 
@@ -405,8 +428,8 @@ const MainForm: React.FC = () => {
         </Row>
         <Row>
           <Col className="text-center">
-            <span className="d-inline-block mr-3">最終更新：2020/12/12</span>
-            <span className="d-inline-block mr-3"><a href="https://twitter.com/YSRKEN/status/1329817752513650688" rel="noreferrer" target="_blank">使い方</a></span>
+            <span className="d-inline-block mr-3">最終更新：2020/12/19</span>
+            <span className="d-inline-block mr-3"><a href="https://twitter.com/YSRKEN/status/1340182344439717891" rel="noreferrer" target="_blank">使い方</a></span>
             <span className="d-inline-block mr-3"><a href="https://github.com/YSRKEN/iris_clothing_catalog" rel="noreferrer" target="_blank">GitHub</a> </span>
             <span><a href="https://twitter.com/YSRKEN" rel="noreferrer" target="_blank">作者のTwitter</a></span>
           </Col>
@@ -445,9 +468,9 @@ const MainForm: React.FC = () => {
             <FilterButtonList title="属性" nameList={TYPE_LIST} selectedNameList={selectedTypeList} />
             <FilterButtonList title="名前" nameList={NAME_LIST} selectedNameList={selectedNameList} />
             <Form.Group>
-              <Form.Label><strong>萌技・スキル・アビリティ</strong></Form.Label><br />
+              <Form.Label><strong>萌技・スキル・アビリティ</strong> (検索ワード{selectedSkillList.length}個)</Form.Label><br />
               <Form.Control value={selectedSkillWord}
-                placeholder="入力した文字が含まれるもののみ表示"
+                placeholder="入力した文字が含まれるもののみ表示 (複数指定可能)"
                 onChange={(e) => dispatch({ type: 'setSelectedSkillWord', message: e.currentTarget.value })} />
             </Form.Group>
           </Form>
