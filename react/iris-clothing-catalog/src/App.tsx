@@ -7,7 +7,7 @@ type SortKey = '' | 'index' | 'reality' | 'iris_name' | 'type' | 'hp' | 'attack'
 
 type SortOrder = 'ascending' | 'descending';
 
-type ActionType = 'changeSortKey' | 'changeFilterStatus' | 'setSelectedClothNickname' | 'setShowDetailModalFlg' | 'setSelectedSkillWord';
+type ActionType = 'changeSortKey' | 'changeFilterStatus' | 'setSelectedClothNickname' | 'setShowDetailModalFlg' | 'setSelectedSkillWord' | 'changeHavingClothFlg';
 
 interface Skill {
   type: '萌技' | 'スキル' | 'アビリティ';
@@ -51,6 +51,7 @@ interface Store {
   showDetailModalFlg: boolean;
   selectedSkillWord: string;
   selectedSkillList: string[];
+  havingClothList: string[];
   dispatch: (action: Action) => void;
 };
 
@@ -112,6 +113,15 @@ const compareClothing = (a: IrisClothing, b: IrisClothing, sortKey: SortKey, sor
   }
 };
 
+const loadData = () => {
+  const temp = window.localStorage.getItem('havingClothList');
+  if (temp === null) {
+    return [];
+  } else {
+    return JSON.parse(temp) as string[];
+  }
+};
+
 const useStore = (): Store => {
   const [clothingList, setClothingList] = useState<IrisClothing[]>([]);
   const [filteredClothingList, setFilteredClothingList] = useState<IrisClothing[]>([]);
@@ -124,10 +134,15 @@ const useStore = (): Store => {
   const [showDetailModalFlg, setShowDetailModalFlg] = useState(false);
   const [selectedSkillWord, setSelectedSkillWord] = useState('');
   const [selectedSkillList, setSelectedSkillList] = useState<string[]>([]);
+  const [havingClothList, setHavingClothList] = useState<string[]>(loadData());
 
   useEffect(() => {
     loadClothingData().then(data => setClothingList(data));
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem('havingClothList', JSON.stringify(havingClothList));
+  }, [havingClothList]);
 
   useEffect(() => {
     const skillList: string[] = [];
@@ -240,6 +255,15 @@ const useStore = (): Store => {
       case 'setSelectedSkillWord':
         setSelectedSkillWord(action.message as string);
         break;
+      case 'changeHavingClothFlg': {
+        const clothNickName = action.message as string;
+        if (havingClothList.includes(clothNickName)) {
+          setHavingClothList(havingClothList.filter(s => s !== clothNickName));
+        } else {
+          setHavingClothList([...havingClothList, clothNickName]);
+        }
+        break;
+      }
     }
   };
 
@@ -255,6 +279,7 @@ const useStore = (): Store => {
     showDetailModalFlg,
     selectedSkillWord,
     selectedSkillList,
+    havingClothList,
     dispatch,
   };
 };
@@ -295,9 +320,10 @@ const TableHeader: React.FC = () => {
 };
 
 const ClothingRecord: React.FC<{ clothing: IrisClothing }> = ({ clothing }) => {
-  const { dispatch } = useContext(Context);
+  const { havingClothList, dispatch } = useContext(Context);
 
   const onClickDetail = () => dispatch({ type: 'setSelectedClothNickname', message: clothing.nickname });
+  const onClickHaving = () => dispatch({ type: 'changeHavingClothFlg', message: clothing.nickname });
 
   return (
     <tr>
@@ -315,7 +341,13 @@ const ClothingRecord: React.FC<{ clothing: IrisClothing }> = ({ clothing }) => {
       <td>{clothing.evade}</td>
       <td>{clothing.counter}</td>
       <td>{clothing.death}</td>
-      <td><Button size="sm" variant="info" onClick={onClickDetail}>詳細...</Button></td>
+      <td>
+        {havingClothList.includes(clothing.nickname)
+          ? <Button size="sm" variant="danger" onClick={onClickHaving}>所持</Button>
+          : <Button size="sm" variant="primary" onClick={onClickHaving}>未所持</Button>
+        }
+        <Button size="sm" className="ml-1" variant="info" onClick={onClickDetail}>詳細...</Button>
+      </td>
     </tr>
   );
 };
@@ -428,7 +460,7 @@ const MainForm: React.FC = () => {
         </Row>
         <Row>
           <Col className="text-center">
-            <span className="d-inline-block mr-3">最終更新：2020/12/19</span>
+            <span className="d-inline-block mr-3">最終更新：2021/01/28</span>
             <span className="d-inline-block mr-3"><a href="https://twitter.com/YSRKEN/status/1340182344439717891" rel="noreferrer" target="_blank">使い方</a></span>
             <span className="d-inline-block mr-3"><a href="https://github.com/YSRKEN/iris_clothing_catalog" rel="noreferrer" target="_blank">GitHub</a> </span>
             <span><a href="https://twitter.com/YSRKEN" rel="noreferrer" target="_blank">作者のTwitter</a></span>
