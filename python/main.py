@@ -65,43 +65,49 @@ if __name__ == '__main__':
             temp = cloth_name.split('】')
             nickname = temp[0].replace('【', '')
             iris_name = temp[1]
-            print(f'{reality} 【{nickname}】{iris_name}')
+            print(f'{reality} 【{nickname}】{iris_name.replace(",", "")}')
 
             # 萌技・スキル・アビリティを取得
-            cloth_link = tr_tag.find_all('td')[name_index].find('a').attrs['href']
-            dom2 = scraping.get_page(cloth_link, 'utf-8')
-            skill_list: List[Skill] = []
-            for table_tag2 in dom2.find_all('td table'):
-                # ヘッダーから、スキルアビリティかどうかの検討をつける
-                thead_tag2 = table_tag2.find('thead')
-                tbody_tag2 = table_tag2.find('tbody')
-                if tbody_tag2 is None:
-                    continue
-                tbody2_text = tbody_tag2.full_text
-                if '分類' not in tbody2_text:
-                    if thead_tag2 is None:
+            if '?' not in iris_name:
+                cloth_link = tr_tag.find_all('td')[name_index].find('a').attrs['href']
+                dom2 = scraping.get_page(cloth_link, 'utf-8')
+                skill_list: List[Skill] = []
+                for table_tag2 in dom2.find_all('td table'):
+                    # ヘッダーから、スキルアビリティかどうかの検討をつける
+                    thead_tag2 = table_tag2.find('thead')
+                    tbody_tag2 = table_tag2.find('tbody')
+                    if tbody_tag2 is None:
                         continue
-                    thead2_text = thead_tag2.full_text
-                    if '分類' not in thead2_text:
-                        continue
+                    tbody2_text = tbody_tag2.full_text
+                    if '分類' not in tbody2_text:
+                        if thead_tag2 is None:
+                            continue
+                        thead2_text = thead_tag2.full_text
+                        if '分類' not in thead2_text:
+                            continue
 
-                # 読み取り
-                record_type = ''
-                for tr_tag2 in table_tag2.find_all('tbody > tr'):
-                    th_tag = tr_tag2.find('th')
-                    td_tags = tr_tag2.find_all('td')
-                    if len(td_tags) < 3:
-                        continue
-                    if th_tag is not None:
-                        record_type = th_tag.text
-                    # テキスト修正対策
-                    message_text = td_tags[2].full_text
-                    temp2 = td_tags[2].find_all('del')
-                    if len(temp2) > 0:
-                        for del_tag in temp2:
-                            message_text = message_text.replace(del_tag.full_text, '')
-                    skill_list.append(Skill(type=record_type, name=td_tags[1].text,
-                                            message=message_text.replace('ＨＰ', 'HP')))
+                    # 読み取り
+                    record_type = ''
+                    for tr_tag2 in table_tag2.find_all('tbody > tr'):
+                        th_tag = tr_tag2.find('th')
+                        td_tags = tr_tag2.find_all('td')
+                        if len(td_tags) < 3:
+                            continue
+                        if th_tag is not None:
+                            record_type = th_tag.text
+                        # テキスト修正対策
+                        message_text = td_tags[2].full_text
+                        temp2 = td_tags[2].find_all('del')
+                        if len(temp2) > 0:
+                            for del_tag in temp2:
+                                message_text = message_text.replace(del_tag.full_text, '')
+                        skill_list.append(Skill(type=record_type, name=td_tags[1].text,
+                                                message=message_text.replace('ＨＰ', 'HP')))
+            else:
+                # まだ詳細ページが作成されていない場合の処理
+                cloth_link = '#'
+                skill_list = []
+                iris_name = iris_name.replace('?', '')
 
             cloth_data = IrisClothing(
                 reality=reality,
