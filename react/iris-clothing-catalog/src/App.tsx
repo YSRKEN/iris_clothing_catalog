@@ -462,15 +462,10 @@ const MainForm: React.FC = () => {
         </Row>
         <Row>
           <Col className="text-center">
-            <span className="d-inline-block mr-3">最終更新：2021/03/21</span>
+            <span className="d-inline-block mr-3">最終更新：2021/04/25</span>
             <span className="d-inline-block mr-3"><a href="https://twitter.com/YSRKEN/status/1340182344439717891" rel="noreferrer" target="_blank">使い方</a></span>
             <span className="d-inline-block mr-3"><a href="https://github.com/YSRKEN/iris_clothing_catalog" rel="noreferrer" target="_blank">GitHub</a> </span>
             <span><a href="https://twitter.com/YSRKEN" rel="noreferrer" target="_blank">作者のTwitter</a></span>
-          </Col>
-        </Row>
-        <Row>
-          <Col className="text-center">
-            <span className="d-inline-block"><strong>※現在、【可能性を秘めた雛】リディアのデータがWiki上に無いので、スキル・アビリティ情報が記載されていません。</strong></span>
           </Col>
         </Row>
         <Row className="my-3">
