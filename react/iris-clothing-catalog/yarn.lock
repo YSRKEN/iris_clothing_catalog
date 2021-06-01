@@ -3582,6 +3582,11 @@ css-color-names@0.0.4, css-color-names@^0.0.4:
   resolved "https://registry.yarnpkg.com/css-color-names/-/css-color-names-0.0.4.tgz#808adc2e79cf84738069b646cb20ec27beb629e0"
   integrity sha1-gIrcLnnPhHOAabZGyyDsJ762KeA=
 
+css-container-queries@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/css-container-queries/-/css-container-queries-0.4.0.tgz#411861d96cd7cb71cbc5e2f0848be58b174ae411"
+  integrity sha512-VuFVx1+oSmA/IVUVrrK0Lonqv540iBTbQkv0zNyBqNuyvImrB82XBdudLijE383BALP3eQQN5Xfx5tnHZI/xnA==
+
 css-declaration-sorter@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/css-declaration-sorter/-/css-declaration-sorter-4.0.1.tgz#c198940f63a76d7e36c1e71018b001721054cb22"
