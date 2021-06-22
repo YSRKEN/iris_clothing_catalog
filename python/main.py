@@ -1,4 +1,3 @@
-from pprint import pprint
 from typing import List, Dict
 
 from model.DomObject import DomObject
@@ -86,6 +85,94 @@ def get_raw_dress_list(table_tag: DomObject) -> List[Dict[str, str]]:
     return raw_dress_list
 
 
+def get_skill_list_by_link(scraping: ScrapingService, link_url: str) -> List[Skill]:
+    dom = scraping.get_page(link_url, 'utf-8')
+    skill_list: List[Skill] = []
+    for table_tag in dom.find_all('td table'):
+        # ヘッダーから、スキルアビリティかどうかの見当をつける
+        thead_tag = table_tag.find('thead')
+        tbody_tag = table_tag.find('tbody')
+        if tbody_tag is None:
+            continue
+        tbody_text = tbody_tag.full_text
+        if '分類' not in tbody_text:
+            if thead_tag is None:
+                continue
+            thead_text = thead_tag.full_text
+            if '分類' not in thead_text:
+                continue
+
+        # 読み取り
+        record_type = ''
+        for tr_tag2 in table_tag.find_all('tbody > tr'):
+            # 読み取り処理
+            th_tag = tr_tag2.find('th')
+            td_tags = tr_tag2.find_all('td')
+            if len(td_tags) < 3:
+                continue
+            if th_tag is not None:
+                record_type = th_tag.text
+            if record_type == '':
+                print('エラー：萌技/スキル/アビリティのタイプが読み取れません')
+                print('  ' + link_url)
+                exit()
+
+            # テキスト修正対策
+            message_text = td_tags[2].full_text
+            temp2 = td_tags[2].find_all('del')
+            if len(temp2) > 0:
+                for del_tag in temp2:
+                    message_text = message_text.replace(del_tag.full_text, '')
+
+            # 追加
+            skill_list.append(Skill(type=record_type, name=td_tags[1].text,
+                                    message=message_text.replace('ＨＰ', 'HP')))
+    return skill_list
+
+
+def get_dress_data_by_raw_data(scraping: ScrapingService, raw_data: Dict[str, str]) -> IrisClothing:
+    if '?' in raw_data['iris_name']:
+        print('　警告：次のアイリスの詳細な情報が取得できませんでした.')
+        print(raw_data)
+        return IrisClothing(
+            reality=raw_data['reality'],
+            nickname=raw_data['nickname'],
+            iris_name=raw_data['iris_name'].replace('?', ''),
+            type=raw_data['type'],
+            hp=int(raw_data['hp']),
+            attack=int(raw_data['attack']),
+            defence=int(raw_data['defence']),
+            magic=int(raw_data['magic']),
+            speed=int(raw_data['speed']),
+            lucky=int(raw_data['lucky']),
+            evade=int(raw_data['evade']),
+            counter=int(raw_data['counter']),
+            death=int(raw_data['death']),
+            link='#',
+            skill_list=[]
+        )
+
+    skill_list = get_skill_list_by_link(scraping, raw_data['link'])
+
+    return IrisClothing(
+            reality=raw_data['reality'],
+            nickname=raw_data['nickname'],
+            iris_name=raw_data['iris_name'],
+            type=raw_data['type'],
+            hp=int(raw_data['hp']),
+            attack=int(raw_data['attack']),
+            defence=int(raw_data['defence']),
+            magic=int(raw_data['magic']),
+            speed=int(raw_data['speed']),
+            lucky=int(raw_data['lucky']),
+            evade=int(raw_data['evade']),
+            counter=int(raw_data['counter']),
+            death=int(raw_data['death']),
+            link=raw_data['link'],
+            skill_list=skill_list,
+        )
+
+
 def get_dress_list(scraping: ScrapingService) -> List[IrisClothing]:
     dress_list: List[IrisClothing] = []
 
@@ -99,90 +186,33 @@ def get_dress_list(scraping: ScrapingService) -> List[IrisClothing]:
 
         # 聖装一覧なので、各列の情報をざっくり読み取る
         raw_dress_list = get_raw_dress_list(table_tag)
+
+        # ザックリ読み取った情報に、詳細ページの情報を付与して正データとする
         for raw_dress in raw_dress_list:
-            print(raw_dress)
+            dress = get_dress_data_by_raw_data(scraping, raw_dress)
+            print(f'[{dress.reality}]【{dress.nickname}】{dress.iris_name}')
+            dress_list.append(dress)
     return dress_list
 
 
 def main(db_path: str, save_path: str):
     # スクレイピングの準備
+    print('初期化中...')
     database: IDataBaseService = SqliteDataBaseService(db_path)
     scraping: ScrapingService = LxmlScrapingService(database)
+    print('完了.')
 
     # スクレイピング処理
+    print('処理中...')
     dress_list = get_dress_list(scraping)
+    print('完了.')
 
     # 結果を保存する
-    # with open(save_path, 'w', encoding='UTF-8') as f:
-    #     f.write(IrisClothing.schema().dumps(dress_list, many=True, ensure_ascii=False, indent=2, sort_keys=True))
+    print('保存中...')
+    with open(save_path, 'w', encoding='UTF-8') as f:
+        f.write(IrisClothing.schema().dumps(dress_list, many=True, ensure_ascii=False, indent=2, sort_keys=True))
+    print('完了.')
 
 
 if __name__ == '__main__':
     main('database.db', 'list.json')
-
-
-"""
-            # 萌技・スキル・アビリティを取得
-            if '?' not in iris_name:
-                cloth_link = tr_tag.find_all('td')[name_index].find('a').attrs['href']
-                dom2 = scraping.get_page(cloth_link, 'utf-8')
-                skill_list: List[Skill] = []
-                for table_tag2 in dom2.find_all('td table'):
-                    # ヘッダーから、スキルアビリティかどうかの検討をつける
-                    thead_tag2 = table_tag2.find('thead')
-                    tbody_tag2 = table_tag2.find('tbody')
-                    if tbody_tag2 is None:
-                        continue
-                    tbody2_text = tbody_tag2.full_text
-                    if '分類' not in tbody2_text:
-                        if thead_tag2 is None:
-                            continue
-                        thead2_text = thead_tag2.full_text
-                        if '分類' not in thead2_text:
-                            continue
-
-                    # 読み取り
-                    record_type = ''
-                    for tr_tag2 in table_tag2.find_all('tbody > tr'):
-                        th_tag = tr_tag2.find('th')
-                        td_tags = tr_tag2.find_all('td')
-                        if len(td_tags) < 3:
-                            continue
-                        if th_tag is not None:
-                            record_type = th_tag.text
-                        # テキスト修正対策
-                        message_text = td_tags[2].full_text
-                        temp2 = td_tags[2].find_all('del')
-                        if len(temp2) > 0:
-                            for del_tag in temp2:
-                                message_text = message_text.replace(del_tag.full_text, '')
-                        skill_list.append(Skill(type=record_type, name=td_tags[1].text,
-                                                message=message_text.replace('ＨＰ', 'HP')))
-            else:
-                # まだ詳細ページが作成されていない場合の処理
-                cloth_link = '#'
-                skill_list = []
-                iris_name = iris_name.replace('?', '')
-
-            cloth_data = IrisClothing(
-                reality=reality,
-                nickname=nickname,
-                iris_name=iris_name,
-                type=cloth_type,
-                hp=cloth_hp,
-                attack=cloth_attack,
-                defence=cloth_defence,
-                magic=cloth_magic,
-                speed=cloth_speed,
-                lucky=cloth_lucky,
-                evade=cloth_evade,
-                counter=cloth_counter,
-                death=cloth_death,
-                link=cloth_link,
-                skill_list=skill_list
-            )
-            if len([x for x in data_list if x.nickname == cloth_data.nickname]) == 0:
-                data_list.append(cloth_data)
-                print(cloth_data)
-
-"""
