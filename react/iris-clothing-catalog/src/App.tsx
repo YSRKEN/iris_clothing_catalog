@@ -1,4 +1,4 @@
-import React, { createContext, createElement, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Button, Col, Container, Form, Modal, Row, Table } from 'react-bootstrap';
 
 const APPLICATION_TITLE = 'めーおーの聖装カタログ';
@@ -427,7 +427,7 @@ const ClothDetailModal: React.FC = () => {
     <Modal.Footer>
       <Button variant="primary" onClick={onCloseDetailModal}>
         OK
-    </Button>
+      </Button>
     </Modal.Footer>
   </Modal>;
 };
