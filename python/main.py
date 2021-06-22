@@ -1,3 +1,4 @@
+from pprint import pprint
 from typing import List, Dict
 
 from model.DomObject import DomObject
@@ -8,6 +9,20 @@ from service.i_database_service import IDataBaseService
 from service.sqlite_database_service import SqliteDataBaseService
 
 DRESS_LIST_URL = 'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E6%80%A7%E8%83%BD%E4%B8%80%E8%A6%A7'
+GUEST_DICT: Dict[str, str] = {
+    'フィーナ':
+        'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E3%83%95%E3%82%A3%E3%83%BC%E3%83%8A',
+    '朝霧麻衣':
+        'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E9%BA%BB%E8%A1%A3',
+    '白崎つぐみ':
+        'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E7%99%BD%E5%B4%8E%E3%81%A4%E3%81%90%E3%81%BF',
+    '鈴木佳奈':
+        'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E9%88%B4%E6%9C%A8%E4%BD%B3%E5%A5%88',
+    '千堂瑛里華':
+        'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E5%8D%83%E5%A0%82%E7%91%9B%E9%87%8C%E8%8F%AF',
+    '悠木陽菜':
+        'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E6%82%A0%E6%9C%A8%E9%99%BD%E8%8F%9C',
+}
 
 
 def is_dress_list_table_tag(table_tag: DomObject) -> bool:
@@ -85,6 +100,63 @@ def get_raw_dress_list(table_tag: DomObject) -> List[Dict[str, str]]:
     return raw_dress_list
 
 
+def get_skill_list_by_guest_name(scraping: ScrapingService, guest_name: str) -> List[Skill]:
+    dom = scraping.get_page(GUEST_DICT[guest_name], 'utf-8')
+
+    # trとtdの状況をザックリ読み取る
+    table_data: List[List[str]] = []
+    for table_tag in dom.find_all('table'):
+        # スキル・アビリティ以外のテーブルを読まないように、ヘッダーで判別する
+        temp = table_tag.find('tr')
+        if temp is None:
+            continue
+        temp2 = temp.find('th')
+        if temp2 is None:
+            continue
+        if temp2.text != '所持':
+            continue
+
+        # 読み取る
+        for tr_tag in table_tag.find_all('tbody > tr'):
+            temp: List[str] = []
+            for td_tag in tr_tag.find_all('td'):
+                temp.append(td_tag.full_text)
+            table_data.append(temp)
+
+    # そこから萌技・スキル・アビリティの情報を取り出す
+    skill_list: List[Skill] = []
+    skill_data_header_index = -1
+    ability_data_header_index = -1
+    for i in range(0, len(table_data)):
+        if '萌技' in table_data[i] and len(table_data[i]) == 2:
+            # 萌技の記録位置を割り出したので、追記
+            # 配列のインデックスは、位置を割り出す手間から
+            # ハードコーディングしている
+            skill_list.append(Skill(type='萌技', name=table_data[i + 1][2],
+                                    message=table_data[i + 1][3]))
+        if 'スキル' in table_data[i] and len(table_data[i]) == 2:
+            skill_data_header_index = i
+        if 'アビリティ' in table_data[i] and len(table_data[i]) == 2:
+            ability_data_header_index = i
+
+    # スキルを読み取り
+    for i in range(skill_data_header_index + 1, ability_data_header_index):
+        if len(table_data[i]) >= 4 and table_data[i][0] in ['N', 'R', 'SR', 'SSR', '潜在SSR']:
+            skill = Skill(type='スキル', name='[' + table_data[i][0] + '] ' + table_data[i][2],
+                          message=table_data[i][3])
+            print(skill)
+            skill_list.append(skill)
+
+    # アビリティを読み取り
+    for i in range(ability_data_header_index + 1, len(table_data)):
+        if len(table_data[i]) >= 4 and table_data[i][0] in ['N', 'R', 'SR', 'SSR', '潜在SSR']:
+            skill = Skill(type='アビリティ', name='[' + table_data[i][0] + '] ' + table_data[i][2],
+                          message=table_data[i][3])
+            print(skill)
+            skill_list.append(skill)
+    return skill_list
+
+
 def get_skill_list_by_link(scraping: ScrapingService, link_url: str) -> List[Skill]:
     dom = scraping.get_page(link_url, 'utf-8')
     skill_list: List[Skill] = []
@@ -127,6 +199,12 @@ def get_skill_list_by_link(scraping: ScrapingService, link_url: str) -> List[Ski
             # 追加
             skill_list.append(Skill(type=record_type, name=td_tags[1].text,
                                     message=message_text.replace('ＨＰ', 'HP')))
+
+    if len(skill_list) == 0:
+        # Nカードにすらスキルとアビリティはあるので、配列長が0になることは通常ありえない
+        print('警告：萌技/スキル/アビリティのタイプが読み取れていません')
+        print('  ' + link_url)
+
     return skill_list
 
 
@@ -152,7 +230,13 @@ def get_dress_data_by_raw_data(scraping: ScrapingService, raw_data: Dict[str, st
             skill_list=[]
         )
 
-    skill_list = get_skill_list_by_link(scraping, raw_data['link'])
+    skill_list: List[Skill] = []
+    for guest in GUEST_DICT:
+        if raw_data['iris_name'] == guest:
+            skill_list = get_skill_list_by_guest_name(scraping, guest)
+            break
+    if len(skill_list) == 0:
+        skill_list = get_skill_list_by_link(scraping, raw_data['link'])
 
     return IrisClothing(
             reality=raw_data['reality'],
