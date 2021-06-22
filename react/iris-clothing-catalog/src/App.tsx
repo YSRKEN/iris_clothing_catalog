@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, createElement, useContext, useEffect, useState } from 'react';
 import { Button, Col, Container, Form, Modal, Row, Table } from 'react-bootstrap';
 
 const APPLICATION_TITLE = 'めーおーの聖装カタログ';
@@ -7,7 +7,7 @@ type SortKey = '' | 'index' | 'reality' | 'iris_name' | 'type' | 'hp' | 'attack'
 
 type SortOrder = 'ascending' | 'descending';
 
-type ActionType = 'changeSortKey' | 'changeFilterStatus' | 'setSelectedClothNickname' | 'setShowDetailModalFlg' | 'setSelectedSkillWord' | 'changeHavingClothFlg';
+type ActionType = 'changeSortKey' | 'changeFilterStatus' | 'setSelectedClothNickname' | 'setShowDetailModalFlg' | 'setSelectedSkillWord' | 'changeHavingClothFlg' | 'setHavingClothList';
 
 interface Skill {
   type: '萌技' | 'スキル' | 'アビリティ';
@@ -89,7 +89,7 @@ const NAME_LIST = ["アシュリー",
   "その他"
 ];
 
-const GUEST_LIST = ["フィーナ", "朝霧麻衣", "白崎つぐみ", "鈴木佳奈"];
+const GUEST_LIST = ["フィーナ", "朝霧麻衣", "白崎つぐみ", "鈴木佳奈", "千堂瑛里華", "悠木陽菜"];
 
 const loadClothingData = async (): Promise<IrisClothing[]> => {
   const res = await fetch('./list.json');
@@ -265,6 +265,10 @@ const useStore = (): Store => {
         }
         break;
       }
+      case 'setHavingClothList': {
+        setHavingClothList(JSON.parse(action.message as string) as string[]);
+        break;
+      }
     }
   };
 
@@ -436,10 +440,12 @@ const MainForm: React.FC = () => {
     selectedNameList,
     selectedSkillWord,
     selectedSkillList,
+    havingClothList,
     dispatch,
   } = useContext(Context);
 
   const [showModalFlg, setShowModalFlg] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState('');
 
   const onShowModal = () => {
     setShowModalFlg(true);
@@ -453,6 +459,50 @@ const MainForm: React.FC = () => {
     setShowModalFlg(false);
   };
 
+  const importList = () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'application/json';
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files === null) {
+        window.alert('エラー：ファイルを選択してください.');
+        return;
+      }
+      if (fileInput.files.length < 1) {
+        window.alert('エラー：ファイルを選択してください.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target === null) {
+          window.alert('エラー：読み込めませんでした.');
+          return;
+        }
+        const havingList: { nickname: string }[] = JSON.parse(e.target.result as string);
+        const havingList2 = havingList.map(r => r.nickname);
+        if (havingList2.length >= 1) {
+          dispatch({ type: 'setHavingClothList', message: JSON.stringify(havingList2) });
+          window.alert('インポート完了.');
+        } else {
+          window.alert('エラー：この形式には対応していません.');
+        }
+      }
+      reader.readAsText(fileInput.files[0]);
+    });
+
+    fileInput.click();
+  };
+
+  useEffect(() => {
+    const output: { nickname: string }[] = [];
+    for (const nickname of havingClothList) {
+      output.push({ nickname });
+    }
+    const content = JSON.stringify(output, null, 2);
+    const blob = new Blob([content], { "type": "application/json;charset=utf-8" });
+    setDownloadUrl(window.URL.createObjectURL(blob));
+  }, [havingClothList]);
+
   return (
     <>
       <Container>
@@ -463,10 +513,21 @@ const MainForm: React.FC = () => {
         </Row>
         <Row>
           <Col className="text-center">
-            <span className="d-inline-block mr-3">最終更新：2021/06/01</span>
+            <span className="d-inline-block mr-3">最終更新：2021/06/22</span>
             <span className="d-inline-block mr-3"><a href="https://twitter.com/YSRKEN/status/1340182344439717891" rel="noreferrer" target="_blank">使い方</a></span>
             <span className="d-inline-block mr-3"><a href="https://github.com/YSRKEN/iris_clothing_catalog" rel="noreferrer" target="_blank">GitHub</a> </span>
             <span><a href="https://twitter.com/YSRKEN" rel="noreferrer" target="_blank">作者のTwitter</a></span>
+          </Col>
+        </Row>
+        <Row className="my-3">
+          <Col className="text-center">
+            <Form>
+              <Form.Group>
+                <Form.Label>所持情報の</Form.Label>
+                <Button size="sm" className="ml-2" onClick={importList}>インポート</Button>
+                <a className="ml-2 btn btn-sm btn-primary" href={downloadUrl} download="having_list.json">エクスポート</a>
+              </Form.Group>
+            </Form>
           </Col>
         </Row>
         <Row className="my-3">
