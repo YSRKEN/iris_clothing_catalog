@@ -23,6 +23,9 @@ GUEST_DICT: Dict[str, str] = {
     '悠木陽菜':
         'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E6%82%A0%E6%9C%A8%E9%99%BD%E8%8F%9C',
 }
+ZEN_LIST = '！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵ' \
+           'ＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～'
+HAN_LIST = '!"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
 
 
 def is_dress_list_table_tag(table_tag: DomObject) -> bool:
@@ -122,6 +125,7 @@ def get_skill_list_by_guest_name(scraping: ScrapingService, guest_name: str) -> 
             for td_tag in tr_tag.find_all('td'):
                 temp.append(td_tag.full_text)
             table_data.append(temp)
+    # pprint(table_data)
 
     # そこから萌技・スキル・アビリティの情報を取り出す
     skill_list: List[Skill] = []
@@ -132,7 +136,8 @@ def get_skill_list_by_guest_name(scraping: ScrapingService, guest_name: str) -> 
             # 萌技の記録位置を割り出したので、追記
             # 配列のインデックスは、位置を割り出す手間から
             # ハードコーディングしている
-            skill_list.append(Skill(type='萌技', name=table_data[i + 1][2],
+            skill_list.append(Skill(type='萌技', name=table_data[i + 1][2].replace('　', ' ').translate(
+                                        str.maketrans(ZEN_LIST, HAN_LIST)),
                                     message=table_data[i + 1][3]))
         if 'スキル' in table_data[i] and len(table_data[i]) == 2:
             skill_data_header_index = i
@@ -140,19 +145,33 @@ def get_skill_list_by_guest_name(scraping: ScrapingService, guest_name: str) -> 
             ability_data_header_index = i
 
     # スキルを読み取り
+    reality_str = ''
     for i in range(skill_data_header_index + 1, ability_data_header_index):
-        if len(table_data[i]) >= 4 and table_data[i][0] in ['N', 'R', 'SR', 'SSR', '潜在SSR']:
-            skill = Skill(type='スキル', name='[' + table_data[i][0] + '] ' + table_data[i][2],
-                          message=table_data[i][3])
-            print(skill)
+        if len(table_data[i]) >= 4 and table_data[i][0] in ['', 'N', 'R', 'SR', 'SSR', '潜在SSR']:
+            if table_data[i][0] != '':
+                reality_str = table_data[i][0]
+            if table_data[i][0] != '':
+                skill = Skill(type='スキル', name='[' + reality_str + '] ' + table_data[i][2],
+                              message=table_data[i][3])
+            else:
+                skill = Skill(type='スキル', name='[' + reality_str + '] ' + table_data[i][1],
+                              message=table_data[i][2])
+            # print(skill)
             skill_list.append(skill)
 
     # アビリティを読み取り
+    reality_str = ''
     for i in range(ability_data_header_index + 1, len(table_data)):
-        if len(table_data[i]) >= 4 and table_data[i][0] in ['N', 'R', 'SR', 'SSR', '潜在SSR']:
-            skill = Skill(type='アビリティ', name='[' + table_data[i][0] + '] ' + table_data[i][2],
-                          message=table_data[i][3])
-            print(skill)
+        if len(table_data[i]) >= 4 and table_data[i][0] in ['', 'N', 'R', 'SR', 'SSR', '潜在SSR']:
+            if table_data[i][0] != '':
+                reality_str = table_data[i][0]
+            if table_data[i][0] != '':
+                skill = Skill(type='アビリティ', name='[' + reality_str + '] ' + table_data[i][2],
+                              message=table_data[i][3])
+            else:
+                skill = Skill(type='アビリティ', name='[' + reality_str + '] ' + table_data[i][1],
+                              message=table_data[i][2])
+            # print(skill)
             skill_list.append(skill)
     return skill_list
 
@@ -237,6 +256,8 @@ def get_dress_data_by_raw_data(scraping: ScrapingService, raw_data: Dict[str, st
             break
     if len(skill_list) == 0:
         skill_list = get_skill_list_by_link(scraping, raw_data['link'])
+    # 一部の聖装で誤登録が起きるのでフィルター処理
+    skill_list = [s for s in skill_list if s.message != '']
 
     return IrisClothing(
             reality=raw_data['reality'],
