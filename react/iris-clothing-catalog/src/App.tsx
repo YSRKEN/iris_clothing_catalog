@@ -89,7 +89,7 @@ const NAME_LIST = ["アシュリー",
   "その他"
 ];
 
-const GUEST_LIST = ["フィーナ", "朝霧麻衣", "白崎つぐみ", "鈴木佳奈"];
+const GUEST_LIST = ["フィーナ", "朝霧麻衣", "白崎つぐみ", "鈴木佳奈", "千堂瑛里華", "悠木陽菜"];
 
 const loadClothingData = async (): Promise<IrisClothing[]> => {
   const res = await fetch('./list.json');
