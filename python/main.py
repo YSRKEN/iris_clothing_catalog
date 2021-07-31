@@ -22,6 +22,10 @@ GUEST_DICT: Dict[str, str] = {
         'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E5%8D%83%E5%A0%82%E7%91%9B%E9%87%8C%E8%8F%AF',
     '悠木陽菜':
         'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E6%82%A0%E6%9C%A8%E9%99%BD%E8%8F%9C',
+    '宮国朱璃':
+        'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E5%AE%AE%E5%9B%BD%E6%9C%B1%E7%92%83',
+    '椎葉古杜音':
+        'https://xn--l8je7d7jnef7m6d8j6d.xn--wiki-4i9hs14f.com/index.php?%E6%A4%8E%E8%91%89%E5%8F%A4%E6%9D%9C%E9%9F%B3',
 }
 ZEN_LIST = '！＂＃＄％＆＇（）＊＋，－．／０１２３４５６７８９：；＜＝＞？＠ＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵ' \
            'ＶＷＸＹＺ［＼］＾＿｀ａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ｛｜｝～'

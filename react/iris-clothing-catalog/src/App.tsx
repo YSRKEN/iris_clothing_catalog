@@ -89,7 +89,9 @@ const NAME_LIST = ["アシュリー",
   "その他"
 ];
 
-const GUEST_LIST = ["フィーナ", "朝霧麻衣", "白崎つぐみ", "鈴木佳奈", "千堂瑛里華", "悠木陽菜"];
+const GUEST_LIST = [
+  "フィーナ", "朝霧麻衣", "白崎つぐみ", "鈴木佳奈", "千堂瑛里華", "悠木陽菜", "宮国朱璃", "椎葉古杜音"
+];
 
 const loadClothingData = async (): Promise<IrisClothing[]> => {
   const res = await fetch('./list.json');
@@ -513,7 +515,7 @@ const MainForm: React.FC = () => {
         </Row>
         <Row>
           <Col className="text-center">
-            <span className="d-inline-block mr-3">最終更新：2021/06/22</span>
+            <span className="d-inline-block mr-3">最終更新：2021/08/01</span>
             <span className="d-inline-block mr-3"><a href="https://twitter.com/YSRKEN/status/1340182344439717891" rel="noreferrer" target="_blank">使い方</a></span>
             <span className="d-inline-block mr-3"><a href="https://github.com/YSRKEN/iris_clothing_catalog" rel="noreferrer" target="_blank">GitHub</a> </span>
             <span><a href="https://twitter.com/YSRKEN" rel="noreferrer" target="_blank">作者のTwitter</a></span>
