@@ -1,3 +1,4 @@
-requests~=2.25.0
-lxml~=4.6.1
-dataclasses-json~=0.5.2
+requests
+dataclasses-json
+lxml
+cssselect
