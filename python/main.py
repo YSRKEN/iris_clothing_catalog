@@ -263,6 +263,27 @@ def get_dress_data_by_raw_data(scraping: ScrapingService, raw_data: Dict[str, st
     # 一部の聖装で誤登録が起きるのでフィルター処理
     skill_list = [s for s in skill_list if s.message != '']
 
+    if raw_data['hp'] == '':
+        print('　警告：次のアイリスの詳細な情報が取得できませんでした.')
+        print(raw_data)
+        return IrisClothing(
+            reality=raw_data['reality'],
+            nickname=raw_data['nickname'],
+            iris_name=raw_data['iris_name'],
+            type=raw_data['type'],
+            hp=0,
+            attack=0,
+            defence=0,
+            magic=0,
+            speed=0,
+            lucky=0,
+            evade=0,
+            counter=0,
+            death=0,
+            link='#',
+            skill_list=skill_list,
+        )
+
     return IrisClothing(
             reality=raw_data['reality'],
             nickname=raw_data['nickname'],
@@ -299,6 +320,8 @@ def get_dress_list(scraping: ScrapingService) -> List[IrisClothing]:
         # ザックリ読み取った情報に、詳細ページの情報を付与して正データとする
         for raw_dress in raw_dress_list:
             dress = get_dress_data_by_raw_data(scraping, raw_dress)
+            if dress.hp == 0:
+                continue
             print(f'[{dress.reality}]【{dress.nickname}】{dress.iris_name}')
             dress_list.append(dress)
     return dress_list
