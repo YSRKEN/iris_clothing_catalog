@@ -141,7 +141,15 @@ const useStore = (): Store => {
   const [havingClothList, setHavingClothList] = useState<string[]>(loadData());
 
   useEffect(() => {
-    loadClothingData().then(data => setClothingList(data));
+    loadClothingData().then(data => {
+      const data2: IrisClothing[] = [];
+      for (const cloth of data) {
+        if (!data2.map(c => c.nickname).includes(cloth.nickname)) {
+          data2.push(cloth);
+        }
+      }
+      setClothingList(data2);
+    });
   }, []);
 
   useEffect(() => {
@@ -449,6 +457,7 @@ const MainForm: React.FC = () => {
 
   const [showModalFlg, setShowModalFlg] = useState(false);
   const [downloadUrl, setDownloadUrl] = useState('');
+  const [havingClothOnlyFlg, setHavingClothOnlyFlg] = useState(false);
 
   const onShowModal = () => {
     setShowModalFlg(true);
@@ -522,6 +531,11 @@ const MainForm: React.FC = () => {
             <span><a href="https://twitter.com/YSRKEN" rel="noreferrer" target="_blank">作者のTwitter</a></span>
           </Col>
         </Row>
+        <Row>
+          <Col className="text-center">
+            <span className="d-inline-block"><strong>※リンク未設定・ステータス0の聖装は、Wiki掲載の情報が不十分なものです。</strong></span>
+          </Col>
+        </Row>
         <Row className="my-3">
           <Col className="text-center">
             <Form>
@@ -537,8 +551,12 @@ const MainForm: React.FC = () => {
           <Col>
             <h2>検索条件</h2>
             <Form className="mt-3">
-              <Form.Group>
+              <Form.Group className="d-flex">
                 <Button onClick={onShowModal}>変更...</Button>
+                <Form.Check className="mx-3 mt-2" label="所持聖装のみ表示"
+                  checked={havingClothOnlyFlg} onChange={() => {
+                    setHavingClothOnlyFlg(!havingClothOnlyFlg);
+                  }} />
               </Form.Group>
             </Form>
           </Col>
@@ -551,7 +569,13 @@ const MainForm: React.FC = () => {
                 <TableHeader />
               </thead>
               <tbody>
-                {filteredClothingList.map(clothing => <ClothingRecord key={clothing.index} clothing={clothing} />)}
+                {filteredClothingList.filter((clothing) => {
+                  if (havingClothOnlyFlg) {
+                    return havingClothList.includes(clothing.nickname);
+                  } else {
+                    return true;
+                  }
+                }).map(clothing => <ClothingRecord key={clothing.index} clothing={clothing} />)}
               </tbody>
             </Table>
           </Col>
