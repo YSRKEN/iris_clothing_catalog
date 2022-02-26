@@ -320,8 +320,8 @@ def get_dress_list(scraping: ScrapingService) -> List[IrisClothing]:
         # ザックリ読み取った情報に、詳細ページの情報を付与して正データとする
         for raw_dress in raw_dress_list:
             dress = get_dress_data_by_raw_data(scraping, raw_dress)
-            if dress.hp == 0:
-                continue
+            # if dress.hp == 0:
+            #     continue
             print(f'[{dress.reality}]【{dress.nickname}】{dress.iris_name}')
             dress_list.append(dress)
     return dress_list
